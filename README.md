@@ -158,4 +158,9 @@ Please also refer Java Tutorials article
 [Installing a Custom Resource Bundle as an Extension](https://docs.oracle.com/javase/tutorial/i18n/serviceproviders/resourcebundlecontrolprovider.html)
 about the service provider interface and configuration in general.
 
+# Support
+You can post questions about using this service in the developerWorks Answers site
+using the tag "[Globalization](https://developer.ibm.com/answers/topics/globalization/)".
 
+# License
+Apache 2.0. See [LICENSE.txt](LICENSE.txt)
