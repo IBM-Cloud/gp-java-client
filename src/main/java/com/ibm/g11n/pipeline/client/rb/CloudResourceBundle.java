@@ -13,43 +13,51 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ibm.gaas;
+package com.ibm.g11n.pipeline.client.rb;
 
 import java.util.Collections;
 import java.util.Enumeration;
 import java.util.Locale;
 import java.util.Map;
 import java.util.ResourceBundle;
+import java.util.logging.Logger;
 
-import com.ibm.gaas.impl.GaasRestServiceClient;
-import com.ibm.gaas.impl.pojo.ResourceData;
+import com.ibm.g11n.pipeline.client.ServiceAccount;
+import com.ibm.g11n.pipeline.client.ServiceClient;
+import com.ibm.g11n.pipeline.client.ServiceException;
 
 /**
  * <code>CloundResourceBundle</code> is a concrete subclass of {@link ResourceBundle}
- * that loads resource strings from IBM Globalization service.
+ * that loads resource strings from IBM Globalization Pipeline service.
  * 
  * @author Yoshito Umaoka
  */
 public final class CloudResourceBundle extends ResourceBundle {
 
+    private static final Logger logger = Logger.getLogger(CloudResourceBundle.class.getName());
+
     private volatile Map<String, String> data;
 
     /**
      * Package local factory method creating a new CloundResourceBundle instance
-     * for the specified service account, project ID and locale.
+     * for the specified service account, bundle ID and locale.
      * 
-     * @param serviceAccount    The service account for IBM Globalization
-     * @param projectId         The project ID
+     * @param serviceAccount    The service account for IBM Globalization Pipeline
+     * @param bundleId          The bundle ID
      * @param locale            The locale
      * @return An instance of CloundResourceBundle.
      */
-    static CloudResourceBundle loadBundle(ServiceAccount serviceAccount, String projectId, Locale locale) {
-        GaasRestServiceClient client = new GaasRestServiceClient(serviceAccount);
-        ResourceData resData = client.getResourceData(projectId, locale);
-        if (resData == null) {
-            return null;
+    static CloudResourceBundle loadBundle(ServiceAccount serviceAccount, String bundleId, Locale locale) {
+        CloudResourceBundle crb = null;
+        ServiceClient client = ServiceClient.getInstance(serviceAccount);
+        try {
+            Map<String, String> resStrings = client.getResourceStrings(bundleId, locale.toLanguageTag(), false);
+            crb = new CloudResourceBundle(resStrings);
+        } catch (ServiceException e) {
+            logger.warning("An error occurred while loading resource data for " + locale
+                    + " from the translation bundle " + bundleId + ": " + e.getMessage());
         }
-        return new CloudResourceBundle(resData.getData());
+        return crb;
     }
 
     /**
@@ -62,11 +70,17 @@ public final class CloudResourceBundle extends ResourceBundle {
         this.data = data;
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Enumeration<String> getKeys() {
         return Collections.enumeration(data.keySet());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     protected Object handleGetObject(String arg0) {
         return data.get(arg0);

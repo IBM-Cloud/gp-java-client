@@ -13,37 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.ibm.gaas.impl.pojo;
+package com.ibm.g11n.pipeline.client.impl;
 
 /**
- * A POJO used for parsing GaaS GET /v1/projects/{projectID}/{languageID}
- * response.
- * 
  * @author Yoshito Umaoka
+ *
  */
-public class ResourceDataResponse {
-    private String status;
-    private String message;
-    private ResourceData resourceData;
+class ServiceResponse {
 
-    public String getStatus() {
+    public enum Status {
+        SUCCESS,
+        ERROR;
+    }
+
+    private Status status;
+    private String message;
+
+    Status getStatus() {
         return status;
     }
-    public void setStatus(String status) {
-        this.status = status;
-    }
 
-    public String getMessage() {
+    String getMessage() {
         return message;
-    }
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public ResourceData getResourceData() {
-        return resourceData;
-    }
-    public void setResourceData(ResourceData resourceData) {
-        this.resourceData = resourceData;
     }
 }

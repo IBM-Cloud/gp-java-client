@@ -1,5 +1,3 @@
-package com.ibm.gaas.impl.pojo;
-
 /*  
  * Copyright IBM Corp. 2015
  *
@@ -15,37 +13,35 @@ package com.ibm.gaas.impl.pojo;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package com.ibm.g11n.pipeline.client;
+
 import java.util.Map;
 import java.util.Set;
 
 /**
- * A POJO used for parsing GaaS GET /v1/service response.
+ * <code>ServiceInfo</code> provides read access to IBM Globalization
+ * Pipeline service's summary information.
  * 
  * @author Yoshito Umaoka
  */
-public class ServiceResponse {
-    private String status;
-    private String message;
+public abstract class ServiceInfo {
     private Map<String, Set<String>> supportedTranslation;
 
-    public String getStatus() {
-        return status;
-    }
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-    public void setMessage(String message) {
-        this.message = message;
+    /**
+     * Protected constructor for a subclass extending <code>ServiceInfo</code>.
+     * @param supportedTranslation The supported translation pairs.
+     */
+    protected ServiceInfo(Map<String, Set<String>> supportedTranslation) {
+        this.supportedTranslation = supportedTranslation;
     }
 
+    /**
+     * Returns a map containing available translation target languages
+     * indexed by supported source language.
+     * @return A map containing available translation target languages
+     * indexed by supported source language.
+     */
     public Map<String, Set<String>> getSupportedTranslation() {
         return supportedTranslation;
-    }
-    public void setSupportedTranslation(Map<String, Set<String>> supportedTranslation) {
-        this.supportedTranslation = supportedTranslation;
     }
 }
