@@ -4,7 +4,35 @@
 	<groupId>com.ibm.g11n.pipeline</groupId>
 	<artifactId>gp-java-client</artifactId>
 	<version>1.0.0-SNAPSHOT</version>
-	<name>gp-java-client</name>
+	<name>Java client SDK for Globalization Pipeline on IBM Bluemix</name>
+	<description>
+		Java client SDK for Globalization Pipeline on IBM Bluemix
+		providing JDK ResourceBundle integration and Java APIs for
+		Globalization Pipeline's REST endpoints.
+	</description>
+	<url>https://github.com/IBM-Bluemix/gp-java-client</url>
+
+	<licenses>
+		<license>
+			<name>The Apache License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<name>Yoshito Umaoka</name>
+			<email>icuintl@us.ibm.com</email>
+			<organization>IBM</organization>
+			<organizationUrl>http://www.ibm.com</organizationUrl>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:git:git@github.com:IBM-Bluemix/gp-java-client.git</connection>
+		<developerConnection>scm:git:git@github.com:IBM-Bluemix/gp-java-client.git</developerConnection>
+		<url>git@github.com:IBM-Bluemix/gp-java-client.git</url>
+	</scm>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -36,6 +64,30 @@
 						<phase>package</phase>
 						<goals>
 							<goal>single</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
 						</goals>
 					</execution>
 				</executions>
