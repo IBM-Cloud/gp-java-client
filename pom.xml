@@ -1,9 +1,8 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>com.ibm.g11n.pipeline</groupId>
 	<artifactId>gp-java-client</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.0.1-SNAPSHOT</version>
 	<name>Java client SDK for Globalization Pipeline on IBM Bluemix</name>
 	<description>
 		Java client SDK for Globalization Pipeline on IBM Bluemix
@@ -32,7 +31,8 @@
 		<connection>scm:git:git@github.com:IBM-Bluemix/gp-java-client.git</connection>
 		<developerConnection>scm:git:git@github.com:IBM-Bluemix/gp-java-client.git</developerConnection>
 		<url>git@github.com:IBM-Bluemix/gp-java-client.git</url>
-	</scm>
+	  <tag>HEAD</tag>
+  </scm>
 
 	<distributionManagement>
 		<snapshotRepository>
