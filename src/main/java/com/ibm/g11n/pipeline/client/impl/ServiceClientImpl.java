@@ -28,8 +28,10 @@ import java.net.URL;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -44,12 +46,19 @@ import javax.xml.bind.DatatypeConverter;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
+import com.google.gson.TypeAdapter;
+import com.google.gson.TypeAdapterFactory;
 import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonToken;
+import com.google.gson.stream.JsonWriter;
 import com.ibm.g11n.pipeline.client.BundleData;
 import com.ibm.g11n.pipeline.client.BundleDataChangeSet;
 import com.ibm.g11n.pipeline.client.BundleMetrics;
 import com.ibm.g11n.pipeline.client.LanguageMetrics;
+import com.ibm.g11n.pipeline.client.MTServiceBindingData;
 import com.ibm.g11n.pipeline.client.NewBundleData;
+import com.ibm.g11n.pipeline.client.NewResourceEntryData;
 import com.ibm.g11n.pipeline.client.NewUserData;
 import com.ibm.g11n.pipeline.client.ResourceEntryData;
 import com.ibm.g11n.pipeline.client.ResourceEntryDataChangeSet;
@@ -58,10 +67,17 @@ import com.ibm.g11n.pipeline.client.ServiceAccount;
 import com.ibm.g11n.pipeline.client.ServiceClient;
 import com.ibm.g11n.pipeline.client.ServiceException;
 import com.ibm.g11n.pipeline.client.ServiceInfo;
+import com.ibm.g11n.pipeline.client.TranslationConfigData;
 import com.ibm.g11n.pipeline.client.TranslationStatus;
 import com.ibm.g11n.pipeline.client.UserData;
 import com.ibm.g11n.pipeline.client.UserDataChangeSet;
+import com.ibm.g11n.pipeline.client.impl.BundleDataImpl.RestBundle;
+import com.ibm.g11n.pipeline.client.impl.MTServiceBindingDataImpl.RestMTServiceBinding;
+import com.ibm.g11n.pipeline.client.impl.ResourceEntryDataImpl.RestResourceEntry;
+import com.ibm.g11n.pipeline.client.impl.ServiceInfoImpl.ExternalServiceInfoImpl.RestExternalServiceInfo;
 import com.ibm.g11n.pipeline.client.impl.ServiceResponse.Status;
+import com.ibm.g11n.pipeline.client.impl.TranslationConfigDataImpl.RestTranslationConfigData;
+import com.ibm.g11n.pipeline.client.impl.UserDataImpl.RestUser;
 
 /**
  * ServiceClient implementation by GSON and JDK's HttpURLConnection.
@@ -74,8 +90,13 @@ public class ServiceClientImpl extends ServiceClient {
         super(account);
     }
 
+    //
+    // Service API
+    //
+
     private static class GetServiceInfoResponse extends ServiceResponse {
         Map<String, Set<String>> supportedTranslation;
+        Collection<RestExternalServiceInfo> externalServices;
     }
 
     @Override
@@ -91,8 +112,12 @@ public class ServiceClientImpl extends ServiceClient {
             throw new ServiceException(resp.getMessage());
         }
 
-        return new ServiceInfoImpl(resp.supportedTranslation);
+        return new ServiceInfoImpl(resp.supportedTranslation, resp.externalServices);
     }
+
+    //
+    // Bundle API
+    //
 
     private static class GetBundleListResponse extends ServiceResponse {
         Set<String> bundleIds;
@@ -336,18 +361,39 @@ public class ServiceClientImpl extends ServiceClient {
     @Override
     public void uploadResourceStrings(String bundleId, String language,
             Map<String, String> strings) throws ServiceException {
+        if (strings == null || strings.isEmpty()) {
+            throw new IllegalArgumentException("strings must be specified.");
+        }
+        Map<String, NewResourceEntryData> newResourceEntries = new HashMap<>(strings.size());
+        for (Entry<String, String> res : strings.entrySet()) {
+            String key = res.getKey();
+            String value = res.getValue();
+            if (value == null) {
+                newResourceEntries.put(key, null);
+            } else {
+                NewResourceEntryData newEntry = new NewResourceEntryData(value);
+                newResourceEntries.put(key, newEntry);
+            }
+        }
+        uploadResourceEntries(bundleId, language, newResourceEntries);
+    }
+
+    @Override
+    public void uploadResourceEntries(String bundleId, String language,
+            Map<String, NewResourceEntryData> newResourceEntries)
+            throws ServiceException {
         if (bundleId == null || bundleId.isEmpty()) {
             throw new IllegalArgumentException("bundleId must be specified.");
         }
         if (language == null || language.isEmpty()) {
             throw new IllegalArgumentException("language must be specified.");
         }
-        if (strings == null || strings.isEmpty()) {
-            throw new IllegalArgumentException("strings must be specified.");
+        if (newResourceEntries == null || newResourceEntries.isEmpty()) {
+            throw new IllegalArgumentException("newResourceEntries must be specified.");
         }
 
         Gson gson = createGson(Map.class.getName());
-        String jsonBody = gson.toJson(strings, Map.class);
+        String jsonBody = gson.toJson(newResourceEntries, Map.class);
         ServiceResponse resp = invokeApi(
                 "PUT",
                 account.getInstanceId() + "/v2/bundles/" + bundleId + "/" + language,
@@ -363,22 +409,45 @@ public class ServiceClientImpl extends ServiceClient {
     public void updateResourceStrings(String bundleId, String language,
             Map<String, String> strings, boolean resync)
                     throws ServiceException {
+        if ((strings == null || strings.isEmpty()) && !resync) {
+            throw new IllegalArgumentException("strings must be specified when resync is false.");
+        }
+
+        Map<String, ResourceEntryDataChangeSet> resourceEntries = null;
+        if (strings != null) {
+            resourceEntries = new HashMap<>(strings.size());
+            for (Entry<String, String> stringRes : strings.entrySet()) {
+                String key = stringRes.getKey();
+                String value = stringRes.getValue();
+                if (value == null) {
+                    resourceEntries.put(key, null);
+                } else {
+                    ResourceEntryDataChangeSet entry = new ResourceEntryDataChangeSet();
+                    entry.setValue(value);
+                    resourceEntries.put(key, entry);
+                }
+            }
+        }
+        updateResourceEntries(bundleId, language, resourceEntries, resync);
+    }
+
+    @Override
+    public void updateResourceEntries(String bundleId, String language,
+            Map<String, ResourceEntryDataChangeSet> resourceEntries, boolean resync)
+            throws ServiceException {
         if (bundleId == null || bundleId.isEmpty()) {
             throw new IllegalArgumentException("bundleId must be specified.");
         }
         if (language == null || language.isEmpty()) {
             throw new IllegalArgumentException("language must be specified.");
         }
-        if ((strings == null || strings.isEmpty()) && !resync) {
-            throw new IllegalArgumentException("strings must be specified when resync is false.");
-        }
 
         String jsonBody = null;
-        if (strings == null || strings.isEmpty()) {
+        if (resourceEntries == null || resourceEntries.isEmpty()) {
             jsonBody = "{}";
         } else {
             Gson gson = createGson(Map.class.getName());
-            jsonBody = gson.toJson(strings, Map.class);
+            jsonBody = gson.toJson(resourceEntries, Map.class);
         }
 
         ServiceResponse resp = invokeApi(
@@ -453,6 +522,10 @@ public class ServiceClientImpl extends ServiceClient {
             throw new ServiceException(resp.getMessage());
         }
     }
+
+    //
+    // User API
+    //
 
     private static class GetUsersResponse extends ServiceResponse {
         Map<String, RestUser> users;
@@ -584,6 +657,169 @@ public class ServiceClientImpl extends ServiceClient {
         }
     }
 
+
+    //
+    // Config API
+    //
+
+    private static class MTBindingsResponse extends ServiceResponse {
+        Map<String, RestMTServiceBinding> mtServiceBindings;
+    }
+
+    @Override
+    public Map<String, MTServiceBindingData> getAllMTServiceBindings() throws ServiceException {
+        MTBindingsResponse resp = invokeApi(
+                "GET",
+                account.getInstanceId() + "/v2/config/mt",
+                null,
+                MTBindingsResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+
+        Map<String, MTServiceBindingData> resultBindings = new TreeMap<>();
+        for (Entry<String, RestMTServiceBinding> entry : resp.mtServiceBindings.entrySet()) {
+            resultBindings.put(entry.getKey(), new MTServiceBindingDataImpl(entry.getValue()));
+        }
+        return resultBindings;
+    }
+
+    private static class AvailableMTLanguagesResponse extends ServiceResponse {
+        Map<String, Map<String, Set<String>>> availableLanguages;
+    }
+
+    @Override
+    public Map<String, Map<String, Set<String>>> getAvailableMTLanguages()
+            throws ServiceException {
+        AvailableMTLanguagesResponse resp = invokeApi(
+                "GET",
+                account.getInstanceId() + "/v2/config/mt",
+                null,
+                AvailableMTLanguagesResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+
+        return resp.availableLanguages;
+    }
+
+    private static class GetMTServiceBindingResponse extends ServiceResponse {
+        RestMTServiceBinding mtServiceBinding;
+    }
+
+    @Override
+    public MTServiceBindingData getMTServiceBinding(String mtServiceInstanceId)
+            throws ServiceException {
+        GetMTServiceBindingResponse resp = invokeApi(
+                "GET",
+                account.getInstanceId() + "/v2/config/mt/" + mtServiceInstanceId,
+                null,
+                GetMTServiceBindingResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+
+        return new MTServiceBindingDataImpl(resp.mtServiceBinding);
+    }
+
+    private static class TranslationConfigsResponse extends ServiceResponse {
+        Map<String, Map<String, TranslationConfigData>> translationConfigs;
+    }
+
+    @Override
+    public Map<String, Map<String, TranslationConfigData>> getAllTranslationConfigs()
+            throws ServiceException {
+        TranslationConfigsResponse resp = invokeApi(
+                "GET",
+                account.getInstanceId() + "/v2/config/trans",
+                null,
+                TranslationConfigsResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+
+        return resp.translationConfigs;
+    }
+
+    private static class ConfiguredMTLanguagesResponse extends ServiceResponse {
+        Map<String, Set<String>> mtLanguages;
+    }
+
+    @Override
+    public Map<String, Set<String>> getConfiguredMTLanguages()
+            throws ServiceException {
+        ConfiguredMTLanguagesResponse resp = invokeApi(
+                "GET",
+                account.getInstanceId() + "/v2/config/trans",
+                null,
+                ConfiguredMTLanguagesResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+
+        return resp.mtLanguages;
+    }
+
+    @Override
+    public void putTranslationConfig(String sourceLanguage, String targetLanguage,
+            TranslationConfigData configData) throws ServiceException {
+        if (configData == null) {
+            throw new IllegalArgumentException("configData must be specified");
+        }
+
+        Gson gson = createGson(TranslationConfigData.class.getName());
+        String jsonBody = gson.toJson(configData, TranslationConfigData.class);
+
+        ServiceResponse resp = invokeApi(
+                "PUT",
+                account.getInstanceId() + "/v2/config/trans/" + sourceLanguage + "/" + targetLanguage,
+                jsonBody,
+                ServiceResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+    }
+
+    private static class TranslationConfigResponse extends ServiceResponse {
+        RestTranslationConfigData config;
+    }
+
+    @Override
+    public TranslationConfigData getTranslationConfig(String sourceLanguage,
+            String targetLanguage) throws ServiceException {
+        TranslationConfigResponse resp = invokeApi(
+                "GET",
+                account.getInstanceId() + "/v2/config/trans/" + sourceLanguage + "/" + targetLanguage,
+                null,
+                TranslationConfigResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+
+        return new TranslationConfigDataImpl(resp.config);
+    }
+
+
+    @Override
+    public void deleteTranslationConfig(String sourceLanguage,
+            String targetLanguage) throws ServiceException {
+        ServiceResponse resp = invokeApi(
+                "DELETE",
+                account.getInstanceId() + "/v2/config/trans/" + sourceLanguage + "/" + targetLanguage,
+                null,
+                ServiceResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+    }
 
     //
     // Private method used for calling REST endpoints
@@ -765,6 +1001,38 @@ public class ServiceClientImpl extends ServiceClient {
     // Custom JSON deserialization code supporting Java Enum
     //
 
+    // Custom type adapter for TranslationStatus enum. This adapter implementation
+    // maps unknown status type to TranslationStatus.UNKNOWN. This fallback mapping
+    // allow GP REST server to introduce a new status without breaking Java SDK
+    // client code.
+    private static class TranslationStatusAdapter extends TypeAdapter<TranslationStatus> {
+        @Override
+        public TranslationStatus read(JsonReader in) throws IOException {
+            if (in.peek() == JsonToken.NULL) {
+                in.nextNull();
+                return null;
+            }
+            TranslationStatus status = null;
+            String statusStr = in.nextString();
+            try {
+                status = TranslationStatus.valueOf(statusStr.toUpperCase());
+            } catch (IllegalArgumentException e) {
+                // use UNKNOWN as fallback
+                status = TranslationStatus.UNKNOWN;
+            }
+            return status;
+        }
+
+        @Override
+        public void write(JsonWriter out, TranslationStatus value) throws IOException {
+            if (value == null) {
+                out.nullValue();
+                return;
+            }
+            out.value(value.name());
+        }
+    }
+
     private static class EnumMapInstanceCreator<K extends Enum<K>, V>
             implements InstanceCreator<EnumMap<K, V>> {
         private final Class<K> enumClazz;
@@ -780,20 +1048,63 @@ public class ServiceClientImpl extends ServiceClient {
         }
     }
 
+    // TypeAdapterFactory used for serializing map entries with null value.
+    // updateResourceStrings and some other REST APIs handles properties
+    // with null value as deletion directive.
+    static class NullMapValueTypeAdapterFactory implements TypeAdapterFactory {
+        @Override
+        public <T> TypeAdapter<T> create(Gson gson, TypeToken<T> typeToken) {
+            // The special handling is only applicable to Map objects.
+            Class<?> rawType = typeToken.getRawType();
+            if (!Map.class.isAssignableFrom(rawType)) {
+                return null;
+            }
+
+            final TypeAdapter<T> delegate = gson.getDelegateAdapter(this, typeToken);
+            return new TypeAdapter<T>() {
+                public void write(JsonWriter out, T value) throws IOException {
+                    boolean serializeNulls = out.getSerializeNulls();
+                    if (!serializeNulls) {
+                        // force null serialization
+                        out.setSerializeNulls(true);
+                    }
+                    delegate.write(out, value);
+                    if (!serializeNulls) {
+                        // reset
+                        out.setSerializeNulls(false);
+                    }
+                }
+                public T read(JsonReader in) throws IOException {
+                    return delegate.read(in);
+                }
+            };
+        }
+    }
+    /**
+     * Creates a new Gson object
+     * 
+     * @param className A class name used for serialization/deserialization.
+     *                  <p>Note: This implementation does not use this argument
+     *                  for now. If we need different kinds of type adapters
+     *                  depending on class, the implementation might be updated
+     *                  to set up appropriate set of type adapters.
+     * @return  A Gson object
+     */
     private static Gson createGson(String className) {
         GsonBuilder builder = new GsonBuilder();
+
         // ISO8601 date format support
         builder.setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
 
-        if (className.equals("com.ibm.g11n.pipeline.client.impl.ServiceClientImpl$GetBundleMetricsResponse")
-                || className.equals("com.ibm.g11n.pipeline.client.impl.ServiceClientImpl$GetLanguageMetricsResponse")){
-            // Custom EnumMap mapping
-            builder.registerTypeAdapter(
-                    new TypeToken<EnumMap<TranslationStatus, Integer>>() {
-                    }.getType(),
-                    new EnumMapInstanceCreator<TranslationStatus, Integer>(
-                            TranslationStatus.class));
-        }
+        builder.registerTypeAdapter(TranslationStatus.class,
+                new TranslationStatusAdapter());
+
+        builder.registerTypeAdapter(
+                new TypeToken<EnumMap<TranslationStatus, Integer>>() {}.getType(),
+                new EnumMapInstanceCreator<TranslationStatus, Integer>(TranslationStatus.class));
+
+        builder.registerTypeAdapterFactory(new NullMapValueTypeAdapterFactory());
+
         return builder.create();
     }
 }

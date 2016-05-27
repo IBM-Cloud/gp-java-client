@@ -22,6 +22,10 @@ package com.ibm.g11n.pipeline.client;
  */
 public enum TranslationStatus {
     /**
+     * The translation status of resource entry is unknown.
+     */
+    UNKNOWN,
+    /**
      * Resource entry is in a bundle's source language.
      */
     SOURCE_LANGUAGE,
@@ -36,5 +40,10 @@ public enum TranslationStatus {
     /**
      * Resource entry was failed to translate, and has no value.
      */
-    FAILED
+    FAILED,
+    /**
+     * Resource entry was not translated because no machine translation
+     * is configured for the language pair, and has no value.
+     */
+    UNCONFIGURED
 }

@@ -16,6 +16,7 @@
 package com.ibm.g11n.pipeline.client;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import com.ibm.g11n.pipeline.client.impl.ServiceClientImpl;
@@ -50,6 +51,7 @@ public abstract class ServiceClient {
 
     /**
      * Protected constructor for a subclass extending <code>ServiceClient</code>.
+     * 
      * @param account   The service account.
      */
     protected ServiceClient(ServiceAccount account) {
@@ -58,21 +60,21 @@ public abstract class ServiceClient {
 
     /**
      * Returns an instance of ServiceClient for the specified ServiceAccount.
-     * @param account   The service account.
+     * 
+     * @param account   The service account. Must not be null.
      * @return  An instance of ServiceClient.
-     * @throws IllegalArgumentException when account is null.
      */
     public static ServiceClient getInstance(ServiceAccount account) {
-        if (account == null) {
-            throw new IllegalArgumentException("account must be specified.");
-        }
+        Objects.requireNonNull(account, "account must not be null");
         return new ServiceClientImpl(account);
     }
 
     /**
-     * Returns an instance of ServiceClient. This factory method only works
-     * if necessary account information is provided via environment variables
-     * or VCAP_SERVICES on Bluemix.
+     * Returns an instance of ServiceClient.
+     * <p>
+     * This factory method only works if necessary account information is
+     * provided via environment variables or VCAP_SERVICES on Bluemix.
+     * 
      * @return An instance of ServiceClient, or null if sufficient configuration
      * is not provided in the runtime environment.
      */
@@ -86,6 +88,7 @@ public abstract class ServiceClient {
 
     /**
      * Returns the service account used by this service client.
+     * 
      * @return The service account used by this service client.
      */
     public ServiceAccount getServiceAccount() {
@@ -94,8 +97,10 @@ public abstract class ServiceClient {
 
     /**
      * Returns the authentication scheme used for accessing IBM Globalization
-     * Pipeline service's REST endpoints. By default, {@link AuthScheme#HMAC HMAC}
-     * is used.
+     * Pipeline service's REST endpoints.
+     * <p>
+     * By default, {@link AuthScheme#HMAC HMAC} is used.
+     * 
      * @return The authentication scheme.
      */
     public AuthScheme getAuthScheme() {
@@ -104,8 +109,10 @@ public abstract class ServiceClient {
 
     /**
      * Sets the authentication scheme.
+     * <p>
      * Note: {@link AuthScheme#BASIC BASIC} can be used only by
      * {@link UserType#READER READER} accounts.
+     * 
      * @param scheme The authentication scheme.
      */
     public void setAuthScheme(AuthScheme scheme) {
@@ -119,11 +126,11 @@ public abstract class ServiceClient {
 
     /**
      * Returns IBM Globalization Pipeline service's information.
+     * 
      * @return The service information.
      * @throws ServiceException when the operation failed.
      */
     public abstract ServiceInfo getServiceInfo() throws ServiceException;
-
 
     //
     // {serviceInstanceId}/v2/bundles APIs
@@ -134,6 +141,7 @@ public abstract class ServiceClient {
      * <p>
      * This operation is only allowed to {@link UserType#ADMINISTRATOR ADMINISTRATOR}
      * of the service instance.
+     * 
      * @return A set of bundle IDs.
      * @throws ServiceException when the operation failed.
      */
@@ -144,8 +152,10 @@ public abstract class ServiceClient {
      * <p>
      * This operation is only allowed to {@link UserType#ADMINISTRATOR ADMINISTRATOR}
      * of the service instance.
+     * 
      * @param bundleId
-     *          The new bundle's ID. The bundle ID must match a regular expression pattern
+     *          The new bundle's ID. Mut not be null or empty.
+     *          <br>The bundle ID must match a regular expression pattern
      *          [a-zA-Z0-9][a-zA-Z0-9_.-]* and the length must be less than or equal
      *          to 255.
      * @param newBundleData
@@ -162,7 +172,8 @@ public abstract class ServiceClient {
      * basic information (source language and target languages) is included
      * in the result if the requesting user type is {@link UserType#READER READER}.
      * of the service instance.
-     * @param bundleId  The bundle ID.
+     * 
+     * @param bundleId  The bundle ID. Must not be null or empty.
      * @return          The bundle's configuration.
      * @throws ServiceException when the operation failed.
      */
@@ -173,7 +184,8 @@ public abstract class ServiceClient {
      * <p>
      * This operation is only allowed to {@link UserType#ADMINISTRATOR ADMINISTRATOR}
      * and {@link UserType#TRANSLATOR TRANSLATOR} of the service instance.
-     * @param bundleId  The bundle ID.
+     * 
+     * @param bundleId  The bundle ID. Mut not be null or empty.
      * @return          The bundle's metrics information.
      * @throws ServiceException when the operation failed.
      * @see LanguageMetrics
@@ -185,6 +197,7 @@ public abstract class ServiceClient {
      * <p>
      * This operation is only allowed to {@link UserType#ADMINISTRATOR ADMINISTRATOR}
      * of the service instance.
+     * 
      * @param bundleId  The bundle ID.
      * @param changeSet The change set of bundle configuration.
      * @throws ServiceException when the operation failed.
@@ -197,6 +210,7 @@ public abstract class ServiceClient {
      * <p>
      * This operation is only allowed to {@link UserType#ADMINISTRATOR ADMINISTRATOR}
      * of the service instance.
+     * 
      * @param bundleId  The bundle ID.
      * @throws ServiceException when the operation failed.
      */
@@ -205,6 +219,7 @@ public abstract class ServiceClient {
     /**
      * Returns a map containing resource string key-value pairs in the specified
      * bundle and language.
+     * 
      * @param bundleId  The bundle ID.
      * @param language  The language specified by BCP 47 language tag.
      * @param fallback  If the value in the source language is included when
@@ -218,6 +233,7 @@ public abstract class ServiceClient {
     /**
      * Returns a map containing resource string entries indexed by resource key
      * in the bundle and the language.
+     * 
      * @param bundleId  The bundle ID.
      * @param language  The language specified by BCP 47 language tag.
      * @return          A map containing resource string entries indexed by resource key.
@@ -232,6 +248,7 @@ public abstract class ServiceClient {
      * <p>
      * This operation is only allowed to {@link UserType#ADMINISTRATOR ADMINISTRATOR}
      * and {@link UserType#TRANSLATOR TRANSLATOR} of the service instance.
+     * 
      * @param bundleId  The bundle ID.
      * @param language  The language specified by BCP 47 language tag.
      * @return          The language metrics information.
@@ -240,14 +257,15 @@ public abstract class ServiceClient {
     public abstract LanguageMetrics getLanguageMetrics(String bundleId,
             String language) throws ServiceException;
 
+    // TODO - review key/value restrictions
     /**
      * Uploads resource string key-value pairs.
      * <p>
      * Following restrictions are applied.
      * <ul>
-     *  <li>Resource key must match a regular expression pattern [a-zA-Z0-9][a-zA-Z0-9_.-]*</li>
+     *  <li>Resource key must not be empty.</li>
      *  <li>Length of resource key must be less than or equal to 255.</li>
-     *  <li>Length of resource value must be less than or equal to 2047.</li>
+     *  <li>Length of resource value must be less than or equal to 8191.</li>
      *  <li>Total number of key-value pairs after upload must be less than or equal to 500.</li>
      * </ul>
      * <p>
@@ -272,13 +290,34 @@ public abstract class ServiceClient {
      * <p>
      * This operation is only allowed to {@link UserType#ADMINISTRATOR ADMINISTRATOR}
      * of the service instance.
+     * 
      * @param bundleId  The bundle ID.
      * @param language  The language specified by BCP 47 language tag.
      * @param strings   The resource string key-value pairs to be uploaded.
      * @throws ServiceException when the operation failed.
+     * @see #uploadResourceEntries(String, String, Map)
      */
     public abstract void uploadResourceStrings(String bundleId, String language,
             Map<String, String> strings) throws ServiceException;
+
+    /**
+     * Upload resource entries.
+     * <p>
+     * This method is similar to {@link #uploadResourceStrings(String, String, Map)},
+     * but is able to other resource entry data along with resource string value.
+     * <p>
+     * This operation is only allowed to {@link UserType#ADMINISTRATOR ADMINISTRATOR}
+     * of the service instance.
+     * 
+     * @param bundleId  The bundle ID.
+     * @param language  The language specified by BCP 47 language tag.
+     * @param newResourceEntries    The map containing {@link NewResourceEntryData}
+     *                  indexed by resource key to be uploaded.
+     * @throws ServiceException when the operation failed.
+     * @see #uploadResourceStrings(String, String, Map)
+     */
+    public abstract void uploadResourceEntries(String bundleId, String language,
+            Map<String, NewResourceEntryData> newResourceEntries) throws ServiceException;
 
     /**
      * Update resource string key-value pairs.
@@ -312,6 +351,7 @@ public abstract class ServiceClient {
      * Updating resource strings in a bundle's translation target language is
      * allowed to {@link UserType#ADMINISTRATOR ADMINISTRATOR} and
      * {@link UserType#TRANSLATOR TRANSLATOR}.
+     * 
      * @param bundleId  The bundle ID
      * @param language  The language specified by BCP 47 language tag.
      * @param strings   The resource string key-value pairs to be uploaded.
@@ -320,9 +360,36 @@ public abstract class ServiceClient {
      *                  language. No effect if the specified language is the source
      *                  language of the bundle.
      * @throws ServiceException when the operation failed.
+     * @see #updateResourceEntries(String, String, Map, boolean)
      */
     public abstract void updateResourceStrings(String bundleId, String language,
             Map<String, String> strings, boolean resync)
+                    throws ServiceException;
+
+    /**
+     * Update resource entries.
+     * <p>
+     * This method is similar to {@link #updateResourceStrings(String, String, Map, boolean)},
+     * but is able to update other resource entry data.
+     * <p>
+     * Updating resource entries in the bundle's source language is only allowed to
+     * {@link UserType#ADMINISTRATOR ADMINISTRATOR} of the service instance.
+     * Updating resource entries in a bundle's translation target language is
+     * allowed to {@link UserType#ADMINISTRATOR ADMINISTRATOR} and
+     * {@link UserType#TRANSLATOR TRANSLATOR}.
+
+     * @param bundleId  The bundle ID
+     * @param language  The language specified by BCP 47 language tag.
+     * @param resourceEntries    The map containing {@link ResourceEntryDataChangeSet}
+     *                  indexed by resource key to be updated.
+     * @param resync    <code>true</code> to force the service to synchronize
+     *                  resource string key-value pairs with the bundle's source
+     *                  language. No effect if the specified language is the source
+     *                  language of the bundle.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract void updateResourceEntries(String bundleId, String language,
+            Map<String, ResourceEntryDataChangeSet> resourceEntries, boolean resync)
                     throws ServiceException;
 
     /**
@@ -330,6 +397,7 @@ public abstract class ServiceClient {
      * <p>
      * This operation is only allowed to {@link UserType#ADMINISTRATOR ADMINISTRATOR} and
      * {@link UserType#TRANSLATOR TRANSLATOR} of the service instance.
+     * 
      * @param bundleId  The bundle ID.
      * @param language  The language specified by BCP 47 language tag.
      * @param resKey    The resource key.
@@ -347,6 +415,7 @@ public abstract class ServiceClient {
      * Updating a resource entry in a bundle's translation target language is
      * allowed to {@link UserType#ADMINISTRATOR ADMINISTRATOR} and
      * {@link UserType#TRANSLATOR TRANSLATOR}.
+     * 
      * @param bundleId  The bundle ID.
      * @param language  The language specified by BCP 47 language tag.
      * @param resKey    The resource key.
@@ -364,6 +433,7 @@ public abstract class ServiceClient {
     /**
      * Returns a map containing user data objects in the service instance indexed
      * by user ID.
+     * 
      * @return A map containing user data objects.
      * @throws ServiceException when the operation failed.
      */
@@ -378,6 +448,7 @@ public abstract class ServiceClient {
      * place. If a password is lost, you can only request for a new password.
      * See {@link #updateUser(String, UserDataChangeSet, boolean)} about password
      * reset.
+     * 
      * @param newUserData   The new user's configuration.
      * @return              The user data object created by this operation.
      * @throws ServiceException when the operation failed.
@@ -389,6 +460,7 @@ public abstract class ServiceClient {
      * Returns the user data object.
      * <p>
      * Note: The password is not available in the returned user data object.
+     * 
      * @param userId        The user ID.
      * @return              The user data object.
      * @throws ServiceException when the operation failed.
@@ -403,6 +475,7 @@ public abstract class ServiceClient {
      * Once password is reset, the old password cannot be used. When the argument
      * <code>resetPassword</code> is <code>false</code>, the user's password won't be returned
      * in the user data object.
+     * 
      * @param userId        The user ID.
      * @param changeSet     The change set of user data.
      * @param resetPassword <code>true</code> to issue a new password.
@@ -415,8 +488,133 @@ public abstract class ServiceClient {
 
     /**
      * Deletes the user.
+     * 
      * @param userId        The user ID.
      * @throws ServiceException when the operation failed.
      */
     public abstract void deleteUser(String userId) throws ServiceException;
+
+
+    //
+    // {serviceInstanceId}/v2/config APIs
+    //
+
+    /**
+     * Gets all machine translation service binding data.
+     * 
+     * @return  A map containing all available machine translation service binding data indexed by
+     *          service instance IDs.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract Map<String, MTServiceBindingData> getAllMTServiceBindings()
+            throws ServiceException;
+
+    /**
+     * Gets all available machine translation source/target languages and
+     * machine translation service instance IDs for each source/target pair.
+     * <p>
+     * <ul>
+     *  <li>The top level keys represent available machine translation source languages.</li>
+     *  <li>The second level keys represent available machine translation target languages.</li>
+     *  <li>The leaf set contains machine translation service instance IDs available for the source-target
+     *  language pair.</li>
+     * </ul>
+     * <p>
+     * The results contains all configurable language pairs, but it does not
+     * mean all of these pairs are currently active. See {@link #getConfiguredMTLanguages()}
+     * for getting currently active machine translation language pairs.
+     * 
+     * @return  A map containing all available machine translation source/target languages
+     *          and machine translation service instance IDs for each source/target pair.
+     * @throws ServiceException when the operation failed.
+     * @see #getConfiguredMTLanguages()
+     */
+    public abstract Map<String, Map<String, Set<String>>> getAvailableMTLanguages()
+            throws ServiceException;
+
+    /**
+     * Gets the specified machine translation service binding data.
+     * 
+     * @param mtServiceInstanceId   The machine translation service's instance ID.
+     * @return  The specified machine translation service binding data.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract MTServiceBindingData getMTServiceBinding(String mtServiceInstanceId)
+            throws ServiceException;
+
+
+    /**
+     * Gets all translation configuration data.
+     * <p>
+     * <ul>
+     *  <li>The top level keys represent machine translation source languages.</li>
+     *  <li>The second level keys represent machine translation target languages.</li>
+     *  <li>The leaf value <code>TranslationCofigData</code> contains custom
+     *  translation configuration data for the language pair.</li>
+     * </ul>
+     * <p>
+     * Currently, translation configuration data contains a machine translation service
+     * to be used for each source/target language pairs, and optional parameters to the
+     * machine translation service.
+     * 
+     * @return  All translation configuration data indexed by translation source/target
+     * languages.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract Map<String, Map<String, TranslationConfigData>> getAllTranslationConfigs()
+            throws ServiceException;
+
+    /**
+     * Gets all active machine translation source/target language pairs.
+     * <p>
+     * <ul>
+     *  <li>The top level keys represent machine translation source languages.</li>
+     *  <li>The leaf value is a set of machine translation target languages.</li>
+     * </ul>
+     * <p>
+     * Unlike {@link #getAvailableMTLanguages()}, this method returns currently
+     * active machine translation source/target language pairs.
+     * 
+     * @return  All active machine translation source/target language pairs.
+     * @throws ServiceException when the operation failed.
+     * @see #getAvailableMTLanguages()
+     */
+    public abstract Map<String, Set<String>> getConfiguredMTLanguages()
+            throws ServiceException;
+
+    /**
+     * Puts the <code>TranslationConfigData</code> for the specified source/target language pairs.
+     * <p>
+     * If there is an existing <code>TranslationConfigData</code> for the language pair,
+     * this method will overwrite the existing data with new one.
+     * 
+     * @param sourceLanguage    The translation source language.
+     * @param targetLanguage    The translation target language.
+     * @param configData        The translation configuration data.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract void putTranslationConfig(String sourceLanguage, String targetLanguage,
+            TranslationConfigData configData) throws ServiceException;
+
+    /**
+     * Returns the <code>TranslationConfigData</code> for the specified source/target language pairs.
+     * 
+     * @param sourceLanguage    The translation source language.
+     * @param targetLanguage    The translation target language.
+     * @return  The translation configuration data.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract TranslationConfigData getTranslationConfig(String sourceLanguage,
+            String targetLanguage) throws ServiceException;
+
+
+    /**
+     * Deletes the <code>TranslationConfigData</code> for the specified source/target language pairs.
+     * 
+     * @param sourceLanguage    The translation source language.
+     * @param targetLanguage    The translation target language.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract void deleteTranslationConfig(String sourceLanguage, String targetLanguage)
+           throws ServiceException;
 }

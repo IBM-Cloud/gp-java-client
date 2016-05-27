@@ -37,6 +37,7 @@ public abstract class UserData {
     /**
      * The constant used for all bundles used in per bundle access
      * control.
+     * 
      * @see #getBundles()
      */
     public static final Set<String> ALL_BUNDLES = Collections.singleton("*");
@@ -61,6 +62,7 @@ public abstract class UserData {
 
     /**
      * Returns the user type.
+     * 
      * @return The user type.
      */
     public UserType getType() {
@@ -69,6 +71,7 @@ public abstract class UserData {
 
     /**
      * Returns the user ID.
+     * 
      * @return The user ID.
      */
     public String getId() {
@@ -80,6 +83,7 @@ public abstract class UserData {
      * <p>
      * Note: A user created by Cloud Foundry cannot be deleted by a service user
      * using the client SDK.
+     * 
      * @return <code>true</code> if this user is managed by Cloud Foundry.
      */
     public boolean isServiceManaged() {
@@ -88,6 +92,7 @@ public abstract class UserData {
 
     /**
      * Returns the last user updated this user's properties.
+     * 
      * @return The last user updated this user's properties.
      */
     public String getUpdatedBy() {
@@ -96,6 +101,7 @@ public abstract class UserData {
 
     /**
      * Returns the last date when this user's properties were updated.
+     * 
      * @return The last date when this user's properties were updated.
      */
     public Date getUpdatedAt() {
@@ -107,6 +113,7 @@ public abstract class UserData {
      * <p>
      * Note: This method returns non-null value only when this object
      * is returned by operations 1) creating a new user 2) reset password.
+     * 
      * @return The user's password.
      * @see ServiceClient#createUser(NewUserData)
      * @see ServiceClient#updateUser(String, UserDataChangeSet, boolean)
@@ -115,23 +122,27 @@ public abstract class UserData {
 
     /**
      * Returns the user's display name.
+     * 
      * @return The user's display name.
      */
     public abstract String getDisplayName();
 
     /**
      * Returns the comment.
+     * 
      * @return The comment.
      */
     public abstract String getComment();
 
     /**
      * Returns a set of bundle IDs accessible by the user.
+     * <p>
      * This method returns null when user type is
      * {@link UserType#ADMINISTRATOR ADMINISTRATOR}.
      * If user type is {@link UserType#TRANSLATOR TRANSLATOR}
      * or {@link UserType#READER READER}, the value null
      * indicates the user has no access to all bundles.
+     * 
      * @return A set of bundle IDs accessible by the user.
      * @see #ALL_BUNDLES
      */
@@ -139,12 +150,14 @@ public abstract class UserData {
 
     /**
      * Returns the arbitrary metadata represented by string key-value pairs.
+     * 
      * @return The arbitrary metadata represented by string key-value pairs.
      */
     public abstract Map<String, String> getMetadata();
 
     /**
      * Returns the user's external ID.
+     * 
      * @return The user's external ID.
      */
     public abstract String getExternalId();

@@ -58,4 +58,63 @@ class BundleDataImpl extends BundleData {
     public String getPartner() {
         return bundle.getPartner();
     }
+
+    @Override
+    public String getSegmentSeparatorPattern() {
+        return bundle.getSegmentSeparatorPattern();
+    }
+
+    @Override
+    public String getNoTranslationPattern() {
+        return bundle.getNoTranslationPattern();
+    }
+
+    /**
+     * Data object used for deserializing bundle data in JSON.
+     * 
+     * @author Yoshito Umaoka
+     */
+    static class RestBundle extends RestObject {
+        private String sourceLanguage;
+        private Set<String> targetLanguages;
+        private boolean readOnly;
+        private Map<String, String> metadata;
+        private String partner;
+        private String segmentSeparatorPattern;
+        private String noTranslationPattern;
+
+        /**
+         * No-args constructor used by JSON unmarshaller
+         */
+        RestBundle() {
+        }
+
+        public String getSourceLanguage() {
+            return sourceLanguage;
+        }
+
+        public Set<String> getTargetLanguages() {
+            return targetLanguages;
+        }
+
+        public boolean isReadOnly() {
+            return readOnly;
+        }
+
+        public Map<String, String> getMetadata() {
+            return metadata;
+        }
+
+        public String getPartner() {
+            return partner;
+        }
+
+        public String getSegmentSeparatorPattern() {
+            return segmentSeparatorPattern;
+        }
+
+        public String getNoTranslationPattern() {
+            return noTranslationPattern;
+        }
+    }
 }

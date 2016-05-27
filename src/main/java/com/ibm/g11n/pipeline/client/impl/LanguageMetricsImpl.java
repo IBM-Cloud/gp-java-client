@@ -42,8 +42,10 @@ class LanguageMetricsImpl extends LanguageMetrics {
 
     @Override
     public EnumMap<TranslationStatus, Integer> getTranslationStatusMetrics() {
-        // no unmodifiable wrapper...
-        return ts;
+        if (ts == null) {
+            return null;
+        }
+        return ts.clone();
     }
 
     @Override

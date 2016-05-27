@@ -17,6 +17,7 @@ package com.ibm.g11n.pipeline.client;
 
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
@@ -107,7 +108,7 @@ public class ServiceAccount {
     private String password;
 
     /**
-     * Private constructor
+     * Private constructor.
      * 
      * @param url           Service URL, no trailing '/'
      * @param instanceId    Service instance ID
@@ -115,15 +116,17 @@ public class ServiceAccount {
      * @param password      Password
      */
     private ServiceAccount(String url, String instanceId, String userId, String password) {
-        this.url = url;
-        this.instanceId = instanceId;
-        this.userId = userId;
-        this.password = password;
+        this.url = Objects.requireNonNull(url, "url must not be null");
+        this.instanceId = Objects.requireNonNull(instanceId, "instanceId must not be null");
+        this.userId = Objects.requireNonNull(userId, "userId must not be null");
+        this.password = Objects.requireNonNull(password, "password mut not be null");
     }
 
     /**
      * Returns an instance of ServiceAccount for the specified IBM Globalization
      * Pipeline service URL and credentials.
+     * <p>
+     * All arguments must no be null.
      * 
      * @param url           The service URL of Globlization Pipeline service.
      *                      (e.g. https://gp-rest.ng.bluemix.net/translate/rest)
@@ -134,14 +137,9 @@ public class ServiceAccount {
      * @param password      The password for the service instance.
      *                      (e.g. zg5SlD+ftXYRIZDblLgEA/ILkkCNqE1y)
      * @return An instance of ServiceAccount
-     * @throws IllegalArgumentException if any of input arguments are null or
-     * malformed.
      */
     public static ServiceAccount getInstance(String url, String instanceId,
             String userId, String password) {
-        if (url == null || instanceId == null || userId == null || password == null) {
-            throw new IllegalArgumentException("Bad parameter(s)");
-        }
 
         if (url.endsWith("/")) {
             // trim off trailing slash
@@ -189,7 +187,9 @@ public class ServiceAccount {
     /**
      * Returns an instance of ServiceAccount for the specified IBM Globalization
      * Pipeline service name and service instance name from VCAP_SERVICES environment
-     * variable. If no matching service instance entry is found, this method returns null.
+     * variable.
+     * <p>
+     * If no matching service instance entry is found, this method returns null.
      * 
      * @param serviceName
      *          The name of IBM Globalization Pipeline service.
@@ -208,6 +208,7 @@ public class ServiceAccount {
     /**
      * Returns an instance of ServiceAccount from the environment variables -
      * GP_URL, GP_INSTANCE_ID, GP_USER_ID and GP_PASSWORD.
+     * <p>
      * If any of these are not defined, this method returns null.
      * 
      * @return  An instance of ServiceAccount initialized by the environment
@@ -234,7 +235,9 @@ public class ServiceAccount {
 
     /**
      * Returns an instance of ServiceAccount from the VCAP_SERVICES environment
-     * variable. When <code>serviceInstanceName</code> is null, this method returns
+     * variable.
+     * <p>
+     * When <code>serviceInstanceName</code> is null, this method returns
      * a ServiceAccount for the first valid IBM Globlization Pipeline service instance.
      * If <code>serviceInstanceName</code> is not null, this method look up a
      * matching service entry, and returns a ServiceAccount for the matching entry.
@@ -291,7 +294,9 @@ public class ServiceAccount {
 
     /**
      * Returns an instance of ServiceAccount for a JsonArray in the VCAP_SERVICES environment.
+     * <p>
      * This method is called from {@link #getInstanceByVcapServices(String, String)}.
+     * 
      * @param jsonArray
      *          The candidate JSON array which may include valid credentials.
      * @param serviceInstanceName
@@ -337,6 +342,7 @@ public class ServiceAccount {
 
     /**
      * Returns the URL of IBM Globalization Pipeline service.
+     * 
      * @return The URL of IBM Globalization Pipeline service.
      */
     public String getUrl() {
@@ -345,6 +351,7 @@ public class ServiceAccount {
 
     /**
      * Returns the ID of IBM Globalization Pipeline service instance.
+     * 
      * @return The ID of IBM Globalization Pipeline service instance.
      */
     public String getInstanceId() {

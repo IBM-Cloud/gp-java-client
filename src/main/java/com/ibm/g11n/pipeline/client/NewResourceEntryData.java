@@ -1,5 +1,5 @@
 /*  
- * Copyright IBM Corp. 2015
+ * Copyright IBM Corp. 2016
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,24 +16,28 @@
 package com.ibm.g11n.pipeline.client;
 
 import java.util.Map;
+import java.util.Objects;
 
 /**
- * <code>ResourceEntryDataChangeSet</code> is used for specifying changes
- * of a resource entry.
+ * <code>NewResourceEntryData</code> is used for specifying a new
+ * resource entry.
  * 
  * @author Yoshito Umaoka
  */
-public class ResourceEntryDataChangeSet {
-    private String value;
+public class NewResourceEntryData {
+    private final String value;
     private Boolean reviewed;
     private Map<String, String> metadata;
     private String partnerStatus;
     private Integer sequenceNumber;
 
     /**
-     * Constructor, creating an empty change set.
+     * Constructor.
+     * 
+     * @param value The resource string value. Must not be null.
      */
-    public ResourceEntryDataChangeSet() {
+    public NewResourceEntryData(String value) {
+        this.value = Objects.requireNonNull(value, "value must not be null");;
     }
 
     /**
@@ -43,17 +47,6 @@ public class ResourceEntryDataChangeSet {
      */
     public String getValue() {
         return value;
-    }
-
-    /**
-     * Sets the new string resource value.
-     * 
-     * @param value The new string resource value.
-     * @return This object.
-     */
-    public ResourceEntryDataChangeSet setValue(String value) {
-        this.value = value;
-        return this;
     }
 
     /**
@@ -71,7 +64,7 @@ public class ResourceEntryDataChangeSet {
      * @param reviewed  The Boolean review status.
      * @return This object.
      */
-    public ResourceEntryDataChangeSet setReviewed(Boolean reviewed) {
+    public NewResourceEntryData setReviewed(Boolean reviewed) {
         this.reviewed = reviewed;
         return this;
     }
@@ -97,7 +90,7 @@ public class ResourceEntryDataChangeSet {
      * @param metadata A map containing new or updated key-value pairs.
      * @return This object.
      */
-    public ResourceEntryDataChangeSet setMetadata(Map<String, String> metadata) {
+    public NewResourceEntryData setMetadata(Map<String, String> metadata) {
         this.metadata = metadata;
         return this;
     }
@@ -121,7 +114,7 @@ public class ResourceEntryDataChangeSet {
      * @param partnerStatus The new partner status string.
      * @return This object.
      */
-    public ResourceEntryDataChangeSet setPartnerStatus(String partnerStatus) {
+    public NewResourceEntryData setPartnerStatus(String partnerStatus) {
         this.partnerStatus = partnerStatus;
         return this;
     }
@@ -144,7 +137,7 @@ public class ResourceEntryDataChangeSet {
      * @param sequenceNumber    The sequence number.
      * @return This object.
      */
-    public ResourceEntryDataChangeSet setSequenceNumber(Integer sequenceNumber) {
+    public NewResourceEntryData setSequenceNumber(Integer sequenceNumber) {
         this.sequenceNumber = sequenceNumber;
         return this;
     }

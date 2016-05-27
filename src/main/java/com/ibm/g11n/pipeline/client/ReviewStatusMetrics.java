@@ -27,16 +27,18 @@ public class ReviewStatusMetrics {
 
     /**
      * Constructs a <code>ReviewStatusMetrics</code>.
+     * 
      * @param reviewed          The number of entries marked as reviewed.
      * @param notYetReviewed    The number of entries not marked as reviewed.
      */
-    public ReviewStatusMetrics(int reviewed, int notYetReviewed) {
+    protected ReviewStatusMetrics(int reviewed, int notYetReviewed) {
         this.reviewed = reviewed;
         this.notYetReviewed = notYetReviewed;
     }
 
     /**
      * Returns the number of entries marked as reviewed.
+     * 
      * @return The number of entries marked as reviewed.
      */
     public int getReviewed() {
@@ -45,6 +47,7 @@ public class ReviewStatusMetrics {
 
     /**
      * Returns the number of entries not marked as reviewed.
+     * 
      * @return The number of entries not marked as reviewed.
      */
     public int getNotYetReviewed() {

@@ -49,6 +49,7 @@ public abstract class BundleData {
 
     /**
      * Returns the source language of this bundle.
+     * 
      * @return The source language of this bundle.
      */
     public final String getSourceLanguage() {
@@ -57,6 +58,7 @@ public abstract class BundleData {
 
     /**
      * Returns if this bundle is read only.
+     * 
      * @return <code>true</code> if this bundle is ready only.
      */
     public boolean isReadOnly() {
@@ -65,6 +67,7 @@ public abstract class BundleData {
 
     /**
      * Returns the last user updated this bundle's properties.
+     * 
      * @return The last user updated this bundle's properties.
      */
     public final String getUpdatedBy() {
@@ -73,6 +76,7 @@ public abstract class BundleData {
 
     /**
      * Returns the last date when this bundle's properties were updated.
+     * 
      * @return The last date when this bundle's properties were updated.
      */
     public final Date getUpdatedAt() {
@@ -82,19 +86,38 @@ public abstract class BundleData {
     /**
      * Returns the set of target languages specified by BCP 47 language tags,
      * such as "de" for German and "zh-Hans" for Simplified Chinese.
+     * 
      * @return The set of target languages.
      */
     public abstract Set<String> getTargetLanguages();
 
     /**
      * Returns the arbitrary metadata represented by string key-value pairs.
+     * 
      * @return The arbitrary metadata represented by string key-value pairs.
      */
     public abstract Map<String, String> getMetadata();
 
     /**
      * Returns the translation partner assigned to this bundle.
-     * @return the translation partner assigned to this bundle.
+     * 
+     * @return The translation partner assigned to this bundle.
      */
     public abstract String getPartner();
+
+    /**
+     * Returns the user defined segmentation separator pattern string in Java
+     * regular expression syntax.
+     * 
+     * @return The user defined segmentation separator pattern.
+     */
+    public abstract String getSegmentSeparatorPattern();
+
+    /**
+     * Returns the user defined no-translation pattern string in Java regular
+     * expression syntax.
+     * 
+     * @return The user defined no-translation pattern string.
+     */
+    public abstract String getNoTranslationPattern();
 }

@@ -28,18 +28,21 @@ import java.util.Map;
 public abstract class LanguageMetrics {
     /**
      * Returns the translation status metrics.
+     * 
      * @return The translation status metrics.
      */
     public abstract EnumMap<TranslationStatus, Integer> getTranslationStatusMetrics();
 
     /**
      * Returns the review status metrics.
+     * 
      * @return The review status metrics.
      */
     public abstract ReviewStatusMetrics getReviewStatusMetrics();
 
     /**
      * Returns the partner maintained status metrics.
+     * 
      * @return The partner maintained status metrics.
      */
     public abstract Map<String, Integer> getPartnerStatusMetrics();

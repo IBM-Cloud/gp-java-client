@@ -15,18 +15,95 @@
  */
 package com.ibm.g11n.pipeline.client.impl;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 
 import com.ibm.g11n.pipeline.client.ServiceInfo;
+import com.ibm.g11n.pipeline.client.impl.ServiceInfoImpl.ExternalServiceInfoImpl.RestExternalServiceInfo;
 
 /**
- * ServiceInfo implementation class.
+ * {@link ServiceInfo} implementation class.
  * 
  * @author Yoshito Umaoka
  */
-public class ServiceInfoImpl extends ServiceInfo {
-    protected ServiceInfoImpl(Map<String, Set<String>> supportedTranslation) {
+class ServiceInfoImpl extends ServiceInfo {
+    private Collection<ExternalServiceInfo> externalServices;
+
+    ServiceInfoImpl(Map<String, Set<String>> supportedTranslation,
+            Collection<RestExternalServiceInfo> restExternalServices) {
         super(supportedTranslation);
+        if (restExternalServices != null) {
+            externalServices = new ArrayList<>(restExternalServices.size());
+            for (RestExternalServiceInfo restExtSvc : restExternalServices) {
+                externalServices.add(new ExternalServiceInfoImpl(restExtSvc));
+            }
+        }
+    }
+
+    @Override
+    public Collection<ExternalServiceInfo> getExternalServices() {
+        if (externalServices == null) {
+            return null;
+        }
+        return Collections.unmodifiableCollection(externalServices);
+    }
+
+    static class ExternalServiceInfoImpl extends ServiceInfo.ExternalServiceInfo {
+        private RestExternalServiceInfo restExternalService;
+
+        ExternalServiceInfoImpl(RestExternalServiceInfo restExternalService) {
+            super(restExternalService.getType(),
+                    restExternalService.getId(),
+                    restExternalService.getName());
+            this.restExternalService = restExternalService;
+        }
+
+        @Override
+        public Map<String, Set<String>> getSupportedTranslation() {
+            Map<String, Set<String>> supportedTranslation =
+                    restExternalService.getSupportedTranslation();
+            if (supportedTranslation == null) {
+                return null;
+            }
+
+            return Collections.unmodifiableMap(supportedTranslation);
+        }
+
+        /**
+         * Data object used for deserializing external service info in JSON.
+         * 
+         * @author Yoshito Umaoka
+         */
+        static class RestExternalServiceInfo {
+            private String type;
+            private String name;
+            private String id;
+            private Map<String, Set<String>> supportedTranslation;
+
+            /**
+             * No-args constructor used by JSON unmarshaller
+             */
+            private RestExternalServiceInfo() {
+            }
+
+            public String getType() {
+                return type;
+            }
+
+            public String getName() {
+                return name;
+            }
+
+            public String getId() {
+                return id;
+            }
+
+            public Map<String, Set<String>> getSupportedTranslation() {
+                return supportedTranslation;
+            }
+        }
     }
 }
