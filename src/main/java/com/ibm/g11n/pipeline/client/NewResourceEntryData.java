@@ -37,7 +37,7 @@ public class NewResourceEntryData {
      * @param value The resource string value. Must not be null.
      */
     public NewResourceEntryData(String value) {
-        this.value = Objects.requireNonNull(value, "value must not be null");;
+        this.value = Objects.requireNonNull(value, "value must not be null");
     }
 
     /**

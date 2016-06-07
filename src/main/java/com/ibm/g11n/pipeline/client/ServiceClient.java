@@ -512,7 +512,6 @@ public abstract class ServiceClient {
     /**
      * Gets all available machine translation source/target languages and
      * machine translation service instance IDs for each source/target pair.
-     * <p>
      * <ul>
      *  <li>The top level keys represent available machine translation source languages.</li>
      *  <li>The second level keys represent available machine translation target languages.</li>
@@ -545,7 +544,6 @@ public abstract class ServiceClient {
 
     /**
      * Gets all translation configuration data.
-     * <p>
      * <ul>
      *  <li>The top level keys represent machine translation source languages.</li>
      *  <li>The second level keys represent machine translation target languages.</li>
@@ -566,7 +564,6 @@ public abstract class ServiceClient {
 
     /**
      * Gets all active machine translation source/target language pairs.
-     * <p>
      * <ul>
      *  <li>The top level keys represent machine translation source languages.</li>
      *  <li>The leaf value is a set of machine translation target languages.</li>
