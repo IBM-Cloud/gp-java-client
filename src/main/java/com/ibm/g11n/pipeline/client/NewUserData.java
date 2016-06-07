@@ -34,6 +34,7 @@ public class NewUserData {
 
     /**
      * Constructor.
+     * 
      * @param type  The type of the new user.
      */
     public NewUserData(UserType type) {
@@ -42,6 +43,7 @@ public class NewUserData {
 
     /**
      * Returns the type of the new user.
+     * 
      * @return The type of the new user.
      * @see UserType
      */
@@ -51,6 +53,7 @@ public class NewUserData {
 
     /**
      * Returns the display name of the new user.
+     * 
      * @return The display name of the new user.
      */
     public String getDisplayName() {
@@ -58,9 +61,11 @@ public class NewUserData {
     }
 
     /**
-     * Sets the display name of the new user. When display name
-     * is not empty, Globalization Pipeline service append it
-     * to user ID in user name fields, such as updated-by.
+     * Sets the display name of the new user.
+     * <p>
+     * When display name is not empty, Globalization Pipeline service
+     * append it to user ID in user name fields, such as updated-by.
+     * 
      * @param displayName   The displayName of the new user.
      * @return This object.
      */
@@ -71,6 +76,7 @@ public class NewUserData {
 
     /**
      * Returns the comment for the new user.
+     * 
      * @return The comment for the new user.
      */
     public String getComment() {
@@ -79,6 +85,7 @@ public class NewUserData {
 
     /**
      * Sets the comment for the new user.
+     * 
      * @param comment The comment for the new user.
      * @return This object.
      */
@@ -89,6 +96,7 @@ public class NewUserData {
 
     /**
      * Returns the set of bundles that the new user can access.
+     * 
      * @return The set of bundles that the new user can access.
      * @see UserData#ALL_BUNDLES
      */
@@ -98,6 +106,7 @@ public class NewUserData {
 
     /**
      * Sets the set of bundle IDs that the new user can access.
+     * <p>
      * This setting is only applicable when user type is
      * {@link UserType#TRANSLATOR TRANSLATOR} or {@link UserType#READER READER}.
      * If user type is {@link UserType#TRANSLATOR TRANSLATOR} or
@@ -105,6 +114,7 @@ public class NewUserData {
      * the new user cannot access any bundles. If you want to allow
      * the new user to access all bundles, use {@link UserData#ALL_BUNDLES ALL_BUNDLES}
      * in this method.
+     * 
      * @param bundles   The set of bundle IDs that the new user can access.
      * @return This object.
      */
@@ -115,6 +125,7 @@ public class NewUserData {
 
     /**
      * Returns a map containing the key-value pairs.
+     * 
      * @return A map containing the key-value pairs.
      */
     public Map<String, String> getMetadata() {
@@ -124,6 +135,7 @@ public class NewUserData {
     /**
      * Sets arbitrary metadata associated with the new user specified
      * by a map containing string key-value pairs.
+     * 
      * @param metadata  A map containing string key-value pairs.
      * @return This object.
      */
@@ -134,6 +146,7 @@ public class NewUserData {
 
     /**
      * Returns the external ID of the new user.
+     * 
      * @return The external ID of the new user.
      */
     public String getExternalId() {
@@ -141,10 +154,13 @@ public class NewUserData {
     }
 
     /**
-     * Sets the external ID of the new user. An external ID is not
-     * used by Globalization Pipeline service for displaying or
-     * identifying a user. This property is reserved for custom applications
-     * accessing Globalization Pipeline service programmatically.
+     * Sets the external ID of the new user.
+     * <p>
+     * An external ID is not used by Globalization Pipeline service for
+     * displaying or identifying a user. This property is reserved for
+     * custom applications accessing Globalization Pipeline service
+     * programmatically.
+     * 
      * @param externalId The external ID of the new user.
      * @return This object.
      */

@@ -29,6 +29,8 @@ public class BundleDataChangeSet {
     private Boolean readOnly;
     private Map<String, String> metadata;
     private String partner;
+    private String segmentSeparatorPattern;
+    private String noTranslationPattern;
 
     /**
      * Constructor, creating an empty change set.
@@ -38,6 +40,7 @@ public class BundleDataChangeSet {
 
     /**
      * Returns the new set of target languages.
+     * 
      * @return The new set of target languages.
      */
     public Set<String> getTargetLanguages() {
@@ -47,6 +50,7 @@ public class BundleDataChangeSet {
     /**
      * Sets the new set of target languages specified by BCP 47
      * language tags.
+     * 
      * @param targetLanguages The set of target languages.
      * @return This object.
      */
@@ -57,6 +61,7 @@ public class BundleDataChangeSet {
 
     /**
      * Returns the new read-only setting.
+     * 
      * @return the new read-only setting.
      */
     public Boolean getReadOnly() {
@@ -65,6 +70,7 @@ public class BundleDataChangeSet {
 
     /**
      * Sets <code>Boolean.TRUE</code> to make this bundle read only.
+     * 
      * @param readOnly <code>Boolean.TRUE</code> to make this bundle read only.
      * @return This object.
      */
@@ -75,6 +81,7 @@ public class BundleDataChangeSet {
 
     /**
      * Returns a map containing the new or updated key-value pairs.
+     * 
      * @return A map containing the new or updated key-value pairs.
      */
     public Map<String, String> getMetadata() {
@@ -83,11 +90,13 @@ public class BundleDataChangeSet {
 
     /**
      * Sets a map containing the new or updated key-value pairs.
+     * <p>
      * When a key currently exists in bundle's metadata, the value
      * of the key will be replaced with the new value. When a key
      * currently exists and the new value is empty, the key-value
      * pair will be removed. When a key does not exists, the key-value
      * pair will be added.
+     * 
      * @param metadata A map containing new or updated key-value pairs.
      * @return This object.
      */
@@ -98,6 +107,7 @@ public class BundleDataChangeSet {
 
     /**
      * Returns the translation partner assigned to this bundle.
+     * 
      * @return The translation partner assigned to this bundle.
      */
     public String getPartner() {
@@ -106,11 +116,64 @@ public class BundleDataChangeSet {
 
     /**
      * Sets the translation partner assigned to this bundle.
+     * 
      * @param partner The translation partner assigned to this bundle.
      * @return This object.
      */
     public BundleDataChangeSet setPartner(String partner) {
         this.partner = partner;
+        return this;
+    }
+
+    /**
+     * Returns the user defined segmentation separator pattern string in Java
+     * regular expression syntax.
+     * 
+     * @return The user defined segmentation separator pattern.
+     */
+    public String getSegmentSeparatorPattern() {
+        return segmentSeparatorPattern;
+    }
+
+    /**
+     * Sets the user defined segmentation separator pattern string in Java
+     * regular expression syntax.
+     * <p>
+     * The pattern is used for dividing an input resource string value into
+     * multiple segments before machine translation. The matching substrings
+     * will be preserved after machine translation.
+     * 
+     * @param segmentSeparatorPattern   The user defined segmentation separator pattern.
+     * @return This object.
+     */
+    public BundleDataChangeSet setSegmentSeparatorPattern(String segmentSeparatorPattern) {
+        this.segmentSeparatorPattern = segmentSeparatorPattern;
+        return this;
+    }
+
+    /**
+     * Returns the user defined no-translation pattern string in Java regular
+     * expression syntax.
+     * 
+     * @return The user defined no-translation pattern string.
+     */
+    public String getNoTranslationPattern() {
+        return noTranslationPattern;
+    }
+
+    /**
+     * Sets the user defined no-translation pattern string in Java regular
+     * expression syntax.
+     * <p>
+     * The pattern is used for preserving matching substrings during machine
+     * translation. For example, pattern "IBM|Bluemix" will skip translating
+     * the words "IBM" and "Bluemix".
+     * 
+     * @param noTranslationPattern  The user defined no-translation pattern string.
+     * @return This object.
+     */
+    public BundleDataChangeSet setNoTranslationPattern(String noTranslationPattern) {
+        this.noTranslationPattern = noTranslationPattern;
         return this;
     }
 }

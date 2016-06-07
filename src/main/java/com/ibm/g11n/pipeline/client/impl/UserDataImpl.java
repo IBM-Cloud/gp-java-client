@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.ibm.g11n.pipeline.client.UserData;
+import com.ibm.g11n.pipeline.client.UserType;
 
 /**
  * UserData implementation class.
@@ -69,8 +70,63 @@ class UserDataImpl extends UserData {
         return Collections.unmodifiableMap(metadata);
     }
 
-   @Override
+    @Override
     public String getExternalId() {
        return user.getExternalId();
+    }
+
+    /**
+     * Data object used for deserializing user data in JSON.
+     * 
+     * @author Yoshito Umaoka
+     */
+    static class RestUser extends RestObject {
+        private UserType type;
+        private String id;
+        private String password;
+        private String displayName;
+        private String comment;
+        private Set<String> bundles;
+        private Map<String, String> metadata;
+        private boolean serviceManaged;
+        private String externalId;
+
+        
+
+        public UserType getType() {
+            return type;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public String getPassword() {
+            return password;
+        }
+
+        public String getDisplayName() {
+            return displayName;
+        }
+
+        public String getComment() {
+            return comment;
+        }
+
+        public Set<String> getBundles() {
+            return bundles;
+        }
+
+        public Map<String, String> getMetadata() {
+            return metadata;
+        }
+
+        public boolean isServiceManaged() {
+            return serviceManaged;
+        }
+
+        public String getExternalId() {
+            return externalId;
+        }
     }
 }

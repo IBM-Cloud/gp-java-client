@@ -56,6 +56,7 @@ public abstract class ResourceEntryData {
     /**
      * Returns the resource string value. If this entry is for a translation
      * target language, then this is the translation result.
+     * 
      * @return The resource string value.
      */
     public final String getValue() {
@@ -64,6 +65,7 @@ public abstract class ResourceEntryData {
 
     /**
      * Returns the resource string value in the source language.
+     * 
      * @return The resource string value in the source language.
      */
     public final String getSourceValue() {
@@ -72,6 +74,7 @@ public abstract class ResourceEntryData {
 
     /**
      * Returns the current translation status.
+     * 
      * @return The current translation status.
      * @see TranslationStatus
      */
@@ -81,6 +84,7 @@ public abstract class ResourceEntryData {
 
     /**
      * Returns <code>true</code> if this entry is marked as reviewed.
+     * 
      * @return <code>true</code> if this entry is marked as reviewed.
      */
     public final boolean isReviewed() {
@@ -89,6 +93,7 @@ public abstract class ResourceEntryData {
 
     /**
      * Returns the last user updated this resource entry.
+     * 
      * @return The last user updated this resource entry.
      */
     public final String getUpdatedBy() {
@@ -97,6 +102,7 @@ public abstract class ResourceEntryData {
 
     /**
      * Returns the last date when this resource entry was updated.
+     * 
      * @return The last date when this resource entry was updated.
      */
     public final Date getUpdatedAt() {
@@ -105,6 +111,7 @@ public abstract class ResourceEntryData {
 
     /**
      * Returns the arbitrary metadata represented by string key-value pairs.
+     * 
      * @return The arbitrary metadata represented by string key-value pairs.
      */
     public abstract Map<String, String> getMetadata();
@@ -112,7 +119,16 @@ public abstract class ResourceEntryData {
     /**
      * Returns the status string set by a translation partner.
      * This property is reserved for a translation partner's use.
+     * 
      * @return The status string set by a translation partner.
      */
     public abstract String getPartnerStatus();
+
+    /**
+     * Returns the sequence number of the resource entry.
+     * The value of sequence number might be used for sorting resource entries.
+     * 
+     * @return The sequence number of the resource entry.
+     */
+    public abstract Integer getSequenceNumber();
 }

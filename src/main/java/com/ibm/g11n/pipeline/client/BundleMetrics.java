@@ -29,18 +29,21 @@ public abstract class BundleMetrics {
 
     /**
      * Returns the translation status metrics by target language.
+     * 
      * @return The translation status metrics by target language.
      */
     public abstract Map<String, EnumMap<TranslationStatus, Integer>> getTranslationStatusMetricsByLanguage();
 
     /**
      * Returns the review status metrics by target language.
+     * 
      * @return The review status metrics by target language.
      */
     public abstract Map<String, ReviewStatusMetrics> getReviewStatusMetricsByLanguage();
 
     /**
      * Returns the partner maintained status metrics by target language.
+     * 
      * @return The partner maintained status metrics by target language.
      */
     public abstract Map<String, Map<String, Integer>> getPartnerStatusMetricsByLanguage();

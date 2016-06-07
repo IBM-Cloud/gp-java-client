@@ -23,18 +23,23 @@ package com.ibm.g11n.pipeline.client;
 public enum UserType {
     /**
      * Administrator of a service instance.
+     * <p>
      * An administrator can create, read, update and delete
      * bundles and users in the service instance.
      */
     ADMINISTRATOR,
     /**
-     * Translator. A translator can read bundles and update
+     * Translator.
+     * <p>
+     * A translator can read bundles and update
      * translations. This user type is designed for allowing
      * external translators to edit translation contents.
      */
     TRANSLATOR,
     /**
-     * Reader. A reader can read resource strings and access
+     * Reader.
+     * <p>
+     * A reader can read resource strings and access
      * a list of available languages in a bundle. This user
      * type is designed for embedding service account information
      * in distributed or web client based applications.

@@ -38,7 +38,8 @@ public class UserDataChangeSet {
     }
 
     /**
-     * Return the new display name.
+     * Returns the new display name.
+     * 
      * @return The new display name.
      */
     public String getDisplayName() {
@@ -47,6 +48,7 @@ public class UserDataChangeSet {
 
     /**
      * Sets the new display name.
+     * 
      * @param displayName The new display name.
      * @return This object.
      */
@@ -57,6 +59,7 @@ public class UserDataChangeSet {
 
     /**
      * Returns the new comment.
+     * 
      * @return The new comment.
      */
     public String getComment() {
@@ -65,6 +68,7 @@ public class UserDataChangeSet {
 
     /**
      * Sets the new comment.
+     * 
      * @param comment The new comment.
      * @return This object.
      */
@@ -75,6 +79,7 @@ public class UserDataChangeSet {
 
     /**
      * Returns the updated accessible bundle IDs.
+     * 
      * @return The updated accessible bundle IDs.
      */
     public Set<String> getBundles() {
@@ -83,6 +88,7 @@ public class UserDataChangeSet {
 
     /**
      * Sets the updated accessible bundle IDs.
+     * 
      * @param bundles The updated accessible bundle IDs.
      * @return This object.
      */
@@ -93,6 +99,7 @@ public class UserDataChangeSet {
 
     /**
      * Returns a map containing the new or updated key-value pairs.
+     * 
      * @return A map containing the new or updated key-value pairs.
      */
     public Map<String, String> getMetadata() {
@@ -101,11 +108,13 @@ public class UserDataChangeSet {
 
     /**
      * Sets a map containing the new or updated key-value pairs.
+     * <p>
      * When a key currently exists in bundle's metadata, the value
      * of the key will be replaced with the new value. When a key
      * currently exists and the new value is empty, the key-value
      * pair will be removed. When a key does not exists, the key-value
      * pair will be added.
+     * 
      * @param metadata A map containing new or updated key-value pairs.
      * @return This object.
      */
@@ -116,6 +125,7 @@ public class UserDataChangeSet {
 
     /**
      * Returns the new external ID.
+     * 
      * @return The new external ID.
      */
     public String getExternalId() {
@@ -124,6 +134,7 @@ public class UserDataChangeSet {
 
     /**
      * Sets the new external ID.
+     * 
      * @param externalId The new external ID.
      * @return This object.
      */

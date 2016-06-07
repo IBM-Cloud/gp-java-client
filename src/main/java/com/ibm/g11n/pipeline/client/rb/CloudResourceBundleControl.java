@@ -49,8 +49,49 @@ import com.ibm.g11n.pipeline.client.ServiceInfo;
 public final class CloudResourceBundleControl extends Control {
 
     private static final String FORMAT_GP_CLOUD_BUNDLE = "gp.cloud.bundle";
-    private static final List<String> FORMAT_LIST =
-        Collections.unmodifiableList(Arrays.asList(FORMAT_GP_CLOUD_BUNDLE, "java.class", "java.properties"));
+
+    /**
+     * Enum for resource bundle lookup modes.
+     * 
+     * @author Yoshito Umaoka
+     */
+    public enum LookupMode {
+        /**
+         * Lookup a bundle in a Globalization Pipeline service instance first.
+         * If absent, lookup a standard Java resource bundle in classpath.
+         */
+        REMOTE_THEN_LOCAL(
+                Arrays.asList(FORMAT_GP_CLOUD_BUNDLE, "java.class", "java.properties")),
+
+        /**
+         * Lookup a standard Java resource bundle in classpath first.
+         * If absent, lookup a bundle in a Globalization Pipeline service instance.
+         */
+        LOCAL_THEN_REMOTE(
+                Arrays.asList("java.class", "java.properties", FORMAT_GP_CLOUD_BUNDLE)),
+
+        /**
+         * Lookup a bundle in a Globalization Pipeline service only.
+         */
+        REMOTE_ONLY(
+                Collections.singletonList(FORMAT_GP_CLOUD_BUNDLE)),
+
+        /**
+         * Look up a standard Java resource bundle in classpath.
+         */
+        LOCAL_ONLY(
+                Arrays.asList("java.class", "java.properties"));
+
+        private final List<String> formatList;
+
+        LookupMode(List<String> formatList) {
+            this.formatList = Collections.unmodifiableList(formatList);
+        }
+
+        List<String> getFormatList() {
+            return formatList;
+        }
+    };
 
     private static final ConcurrentHashMap<String, Set<Locale>> SUPPORTED_LOCALES =
             new ConcurrentHashMap<String, Set<Locale>>();
@@ -65,6 +106,16 @@ public final class CloudResourceBundleControl extends Control {
     private Pattern inclusionPattern;
     private Pattern exclusionPattern;
     private NameMapper nameMapper;
+    private LookupMode mode;
+
+    /**
+     * The environment variable name for specifying resource bundle lookup mode.
+     * The valid values are defined in {@link LookupMode}. By default,
+     * {@link LookupMode#REMOTE_THEN_LOCAL REMOTE_THEN_LOCAL} is used. 
+     */
+    public static final String GP_LOOKUP_MODE = "GP_LOOKUP_MODE";
+
+    private static final LookupMode DEFAULT_LOOKUP_MODE = LookupMode.REMOTE_THEN_LOCAL;
 
     /**
      * The environment variable name for specifying resource bundle cache expiration time.
@@ -149,6 +200,20 @@ public final class CloudResourceBundleControl extends Control {
      */
     public static CloudResourceBundleControl getInstance(ServiceAccount serviceAccount) {
         return getInstance(serviceAccount, initCacheExpiration());
+    }
+
+    /**
+     * Create an instance of <code>CloudResourceBundleControl</code> with the specified
+     * service account.
+     * 
+     * @param serviceAccount    The service account.
+     * @param mode              The resource bundle resolution mode, or null for default mode
+     *                          ({@link LookupMode#REMOTE_THEN_LOCAL}).
+     * @return  An instance of CloundResourceBundleControl.
+     * @throws IllegalArgumentException when serviceAccount is null.
+     */
+    public static CloudResourceBundleControl getInstance(ServiceAccount serviceAccount, LookupMode mode) {
+        return getInstance(serviceAccount, initCacheExpiration(), null, null, null, mode);
     }
 
     /**
@@ -238,6 +303,42 @@ public final class CloudResourceBundleControl extends Control {
      */
     public static CloudResourceBundleControl getInstance(ServiceAccount serviceAccount,
             long cacheExpiration, String inclusionPattern, String exclusionPattern, NameMapper nameMapper) {
+        return getInstance(serviceAccount, cacheExpiration,
+                inclusionPattern, exclusionPattern, nameMapper, null);
+    }
+
+    /**
+     * Create an instance of <code>CloudResourceBundleControl</code> with the specified
+     * service account, cache expiration, bundle inclusion/exclusion name pattern, the custom
+     * bundle name mapper and bundle lookup mode.
+     * <p>
+     * The cache expiration time is in milliseconds
+     * and must be positive except for two special values.
+     *  <ul>
+     *      <li>{@link Control#TTL_DONT_CACHE} to disable resource bundle cache</li>
+     *      <li>{@link Control#TTL_NO_EXPIRATION_CONTROL} to disable resource bundle cache expiration</li>
+     *  </ul>
+     * <p>
+     *
+     * @param serviceAccount    The service account.
+     * @param cacheExpiration   The cache expiration, see the method description for details.
+     * @param inclusionPattern  The regular expression pattern string for specifying resource bundle
+     *                          names to be included, or null.
+     * @param exclusionPattern  The regular expression pattern string for specifying resource bundle
+     *                          package names to be excluded in addition to
+     *                          {@link #GP_RB_DEFAULT_EXCLUSION_PATTERN_STRING}, or null.
+     * @param nameMapper        The custom base name to bundle ID mapper, or null if no mapping is necessary.
+     * @param mode              The resource bundle lookup mode. If null, and the environment variable
+     *                          {@link #GP_LOOKUP_MODE} is not set, {@link LookupMode#REMOTE_THEN_LOCAL
+     *                          REMOTE_THEN_LOCAL} is used.
+     * @return  An instance of CloudResourceBundleControl.
+     * @throws IllegalArgumentException when <code>serviceAccount</code> is null,
+     * or <code>cacheExpiration</code> value is illegal,
+     * or <code>inclusionPattern</code>/<code>exclusionPattern</code> syntax is invalid.
+     */
+    public static CloudResourceBundleControl getInstance(ServiceAccount serviceAccount,
+            long cacheExpiration, String inclusionPattern, String exclusionPattern,
+            NameMapper nameMapper, LookupMode mode) {
         if (serviceAccount == null) {
             throw new IllegalArgumentException("serviceAccount is null");
         }
@@ -267,14 +368,16 @@ public final class CloudResourceBundleControl extends Control {
             }
         }
 
-        return new CloudResourceBundleControl(serviceAccount, cacheExpiration,
+        return new CloudResourceBundleControl(serviceAccount, mode, cacheExpiration,
                 incPat, excPat, nameMapper);
     }
+
 
     /**
      * Package local constructor.
      * 
      * @param serviceAccount    The service account
+     * @param mode              The resource bundle lookup mode
      * @param ttl               The cache expiration time in milliseconds.
      *                          -1 (Control.TTL_DONT_CACHE) to disable cache,
      *                          -2 (Control.TTL_NO_EXPIRATION_CONTROL) to disable cache expiration.
@@ -284,9 +387,10 @@ public final class CloudResourceBundleControl extends Control {
      * @param nameMapper        The Java base name to IBM Globalization Pipeline bundle ID
      *                          mapper, or null if same names are used.
      */
-    CloudResourceBundleControl(ServiceAccount serviceAccount, long ttl,
+    CloudResourceBundleControl(ServiceAccount serviceAccount, LookupMode mode, long ttl,
             Pattern inclusionPattern, Pattern exclusionPattern, NameMapper nameMapper) {
         this.serviceAccount = serviceAccount;
+        this.mode = (mode == null) ? initMode() : mode;
         this.ttl = ttl;
         this.inclusionPattern = inclusionPattern;
         this.exclusionPattern = exclusionPattern;
@@ -295,7 +399,7 @@ public final class CloudResourceBundleControl extends Control {
 
     @Override
     public List<String> getFormats(String baseName) {
-        return FORMAT_LIST;
+        return mode.getFormatList();
     }
 
     @Override
@@ -404,5 +508,20 @@ public final class CloudResourceBundleControl extends Control {
         }
 
         return DEFAULT_CACHE_EXPIRATION;
+    }
+
+    private static LookupMode initMode() {
+        Map<String, String> env = System.getenv();
+        String envMode = env.get(GP_LOOKUP_MODE);
+
+        LookupMode mode = DEFAULT_LOOKUP_MODE;
+        if (envMode != null) {
+            try {
+                mode = LookupMode.valueOf(envMode.toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException e) {
+                // fall through
+            }
+        }
+        return mode;
     }
 }

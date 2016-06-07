@@ -16,8 +16,9 @@
 package com.ibm.g11n.pipeline.client.impl;
 
 /**
+ * The base object used for receiving a REST API response. 
+ * 
  * @author Yoshito Umaoka
- *
  */
 class ServiceResponse {
 

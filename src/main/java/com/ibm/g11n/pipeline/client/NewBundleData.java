@@ -16,6 +16,7 @@
 package com.ibm.g11n.pipeline.client;
 
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -29,18 +30,23 @@ public class NewBundleData {
     private Set<String> targetLanguages;
     private Map<String, String> metadata;
     private String partner;
+    private String segmentSeparatorPattern;
+    private String noTranslationPattern;
 
     /**
      * Constructor.
+     * 
      * @param sourceLanguage    The source language of the new bundle, specified
-     *                          by BCP 47 language tag.
+     *                          by BCP 47 language tag. Must not be null.
      */
     public NewBundleData(String sourceLanguage) {
-        this.sourceLanguage = sourceLanguage;
+        this.sourceLanguage = Objects.requireNonNull(sourceLanguage,
+                "sourceLanguage must no be null");
     }
 
     /**
      * Returns the source language.
+     * 
      * @return The source language.
      */
     public String getSourceLanguage() {
@@ -49,6 +55,7 @@ public class NewBundleData {
 
     /**
      * Returns the set of target languages.
+     * 
      * @return The set of target languages.
      */
     public Set<String> getTargetLanguages() {
@@ -57,6 +64,7 @@ public class NewBundleData {
 
     /**
      * Sets the set of target languages specified by BCP 47 language tags.
+     * 
      * @param targetLanguages   The set of target languages specified by BCP 47
      *                          language tags.
      * @return This object.
@@ -68,6 +76,7 @@ public class NewBundleData {
 
     /**
      * Returns a map containing the key-value pairs.
+     * 
      * @return A map containing the key-value pairs.
      */
     public Map<String, String> getMetadata() {
@@ -77,6 +86,7 @@ public class NewBundleData {
     /**
      * Sets arbitrary metadata associated with the new bundle specified
      * by a map containing string key-value pairs.
+     * 
      * @param metadata  A map containing string key-value pairs.
      * @return This object.
      */
@@ -87,6 +97,7 @@ public class NewBundleData {
 
     /**
      * Returns the translation partner assigned to the new bundle.
+     * 
      * @return The translation partner assigned to the new bundle.
      */
     public String getPartner() {
@@ -95,11 +106,64 @@ public class NewBundleData {
 
     /**
      * Sets the translation partner assigned to the new bundle.
+     * 
      * @param partner The translation partner assigned to the new bundle.
      * @return This object.
      */
     public NewBundleData setPartner(String partner) {
         this.partner = partner;
+        return this;
+    }
+
+    /**
+     * Returns the user defined segmentation separator pattern string in Java
+     * regular expression syntax.
+     * 
+     * @return The user defined segmentation separator pattern.
+     */
+    public String getSegmentSeparatorPattern() {
+        return segmentSeparatorPattern;
+    }
+
+    /**
+     * Sets the user defined segmentation separator pattern string in Java
+     * regular expression syntax.
+     * <p>
+     * The pattern is used for dividing an input resource string value into
+     * multiple segments before machine translation. The matching substrings
+     * will be preserved after machine translation.
+     * 
+     * @param segmentSeparatorPattern   The user defined segmentation separator pattern.
+     * @return This object.
+     */
+    public NewBundleData setSegmentSeparatorPattern(String segmentSeparatorPattern) {
+        this.segmentSeparatorPattern = segmentSeparatorPattern;
+        return this;
+    }
+
+    /**
+     * Returns the user defined no-translation pattern string in Java regular
+     * expression syntax.
+     * 
+     * @return The user defined no-translation pattern string.
+     */
+    public String getNoTranslationPattern() {
+        return noTranslationPattern;
+    }
+
+    /**
+     * Sets the user defined no-translation pattern string in Java regular
+     * expression syntax.
+     * <p>
+     * The pattern is used for preserving matching substrings during machine
+     * translation. For example, pattern "IBM|Bluemix" will skip translating
+     * the words "IBM" and "Bluemix".
+     * 
+     * @param noTranslationPattern  The user defined no-translation pattern string.
+     * @return This object.
+     */
+    public NewBundleData setNoTranslationPattern(String noTranslationPattern) {
+        this.noTranslationPattern = noTranslationPattern;
         return this;
     }
 }

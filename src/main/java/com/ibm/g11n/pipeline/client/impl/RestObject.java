@@ -23,9 +23,15 @@ import java.util.Date;
  * 
  * @author Yoshito Umaoka
  */
-class RestObject {
+abstract class RestObject {
     private String updatedBy;
     private Date updatedAt;
+
+    /**
+     * No-args constructor used by JSON unmarshaller
+     */
+    protected RestObject() {
+    }
 
     public String getUpdatedBy() {
         return updatedBy;

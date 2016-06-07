@@ -19,6 +19,7 @@ import java.util.Collections;
 import java.util.Map;
 
 import com.ibm.g11n.pipeline.client.ResourceEntryData;
+import com.ibm.g11n.pipeline.client.TranslationStatus;
 
 /**
  * ResoruceEntryData implementation class.
@@ -48,5 +49,53 @@ public class ResourceEntryDataImpl extends ResourceEntryData {
     @Override
     public String getPartnerStatus() {
         return resourceEntry.getPartnerStatus();
+    }
+
+    @Override
+    public Integer getSequenceNumber() {
+        return resourceEntry.getSequenceNumber();
+    }
+
+    /**
+     * Data object used for deserializing resource entry data in JSON.
+     * 
+     * @author Yoshito Umaoka
+     */
+    static class RestResourceEntry extends RestObject {
+        private String value;
+        private String sourceValue;
+        private boolean reviewed;
+        private TranslationStatus translationStatus;
+        private Map<String, String> metadata;
+        private String partnerStatus;
+        private Integer sequenceNumber;
+
+        public String getValue() {
+            return value;
+        }
+
+        public String getSourceValue() {
+            return sourceValue;
+        }
+
+        public boolean isReviewed() {
+            return reviewed;
+        }
+
+        public TranslationStatus getTranslationStatus() {
+            return translationStatus;
+        }
+
+        public Map<String, String> getMetadata() {
+            return metadata;
+        }
+
+        public String getPartnerStatus() {
+            return partnerStatus;
+        }
+
+        public Integer getSequenceNumber() {
+            return sequenceNumber;
+        }
     }
 }

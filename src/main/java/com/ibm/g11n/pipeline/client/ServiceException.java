@@ -32,6 +32,7 @@ public class ServiceException extends Exception {
 
     /**
      * Constructor with detailed message.
+     * 
      * @param message   The detail message.
      */
     public ServiceException(String message) {
@@ -40,6 +41,7 @@ public class ServiceException extends Exception {
 
     /**
      * Constructor with detailed message and cause.
+     * 
      * @param message   The detail message.
      * @param cause     The cause.
      */
@@ -49,6 +51,7 @@ public class ServiceException extends Exception {
 
     /**
      * Constructor with cause.
+     * 
      * @param cause     The cause.
      */
     public ServiceException(Throwable cause) {
