@@ -26,7 +26,7 @@ import com.ibm.g11n.pipeline.client.TranslationStatus;
  * 
  * @author Yoshito Umaoka
  */
-public class ResourceEntryDataImpl extends ResourceEntryData {
+class ResourceEntryDataImpl extends ResourceEntryData {
 
     private final RestResourceEntry resourceEntry;
 

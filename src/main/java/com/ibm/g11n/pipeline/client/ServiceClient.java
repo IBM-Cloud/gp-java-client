@@ -133,6 +133,18 @@ public abstract class ServiceClient {
     public abstract ServiceInfo getServiceInfo() throws ServiceException;
 
     //
+    // {serviceInstanceId}/v2/instance APIs
+    //
+
+    /**
+     * Returns the service instance information.
+     * 
+     * @return The service instance information.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract ServiceInstanceInfo getServiceInstanceInfo() throws ServiceException;
+
+    //
     // {serviceInstanceId}/v2/bundles APIs
     //
 
@@ -559,7 +571,7 @@ public abstract class ServiceClient {
      * languages.
      * @throws ServiceException when the operation failed.
      */
-    public abstract Map<String, Map<String, TranslationConfigData>> getAllTranslationConfigs()
+    public abstract Map<String, Map<String, NewTranslationConfigData>> getAllTranslationConfigs()
             throws ServiceException;
 
     /**
@@ -580,18 +592,18 @@ public abstract class ServiceClient {
             throws ServiceException;
 
     /**
-     * Puts the <code>TranslationConfigData</code> for the specified source/target language pairs.
+     * Puts the <code>NewTranslationConfigData</code> for the specified source/target language pairs.
      * <p>
      * If there is an existing <code>TranslationConfigData</code> for the language pair,
      * this method will overwrite the existing data with new one.
      * 
      * @param sourceLanguage    The translation source language.
      * @param targetLanguage    The translation target language.
-     * @param configData        The translation configuration data.
+     * @param configData        The new translation configuration data.
      * @throws ServiceException when the operation failed.
      */
     public abstract void putTranslationConfig(String sourceLanguage, String targetLanguage,
-            TranslationConfigData configData) throws ServiceException;
+            NewTranslationConfigData configData) throws ServiceException;
 
     /**
      * Returns the <code>TranslationConfigData</code> for the specified source/target language pairs.

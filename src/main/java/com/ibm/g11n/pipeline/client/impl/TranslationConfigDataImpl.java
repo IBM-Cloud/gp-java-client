@@ -15,41 +15,46 @@
  */
 package com.ibm.g11n.pipeline.client.impl;
 
-import java.util.Date;
+import java.util.Collections;
 import java.util.Map;
 
 import com.ibm.g11n.pipeline.client.TranslationConfigData;
 
 /**
- * TranslationConfigData implementation class
+ * TranslationConfigData implementation class.
  * 
  * @author Yoshito Umaoka
  */
-public class TranslationConfigDataImpl extends TranslationConfigData {
-    RestTranslationConfigData restTransConfig;
+class TranslationConfigDataImpl extends TranslationConfigData {
+
+    static class MTServiceDataImpl extends MTServiceData {
+        private final Map<String, Object> params;
+ 
+        MTServiceDataImpl(RestMTServiceData restMTService) {
+            super(restMTService.getServiceInstanceId(),
+                    restMTService.getUpdatedBy(), restMTService.getUpdatedAt());
+            this.params = restMTService.getParams();
+        }
+
+        @Override
+        public Map<String, Object> getParams() {
+            if (params == null) {
+                return null;
+            }
+            return Collections.unmodifiableMap(params);
+        }
+    }
+
+    MTServiceDataImpl mtService;
 
     TranslationConfigDataImpl(RestTranslationConfigData restTransConfig) {
-        this.restTransConfig = restTransConfig;
-        if (restTransConfig.mtService != null) {
-            setMTServiceData(new MTServiceDataImpl(restTransConfig.mtService));
-        }
+        super(restTransConfig.getUpdatedBy(), restTransConfig.getUpdatedAt());
+        this.mtService = new MTServiceDataImpl(restTransConfig.getMTService());
     }
 
-    public static class MTServiceDataImpl extends MTServiceData {
-        MTServiceDataImpl(RestMTServiceData restMTService) {
-            super(restMTService.getServiceInstanceId());
-            this.params = restMTService.getParams();
-            this.updatedBy = restMTService.getUpdatedBy();
-            this.updatedAt = restMTService.getUpdatedAt();
-        }
-    }
-
-    public String getUpdatedBy() {
-        return restTransConfig.getUpdatedBy();
-    }
-
-    public Date getUpdatedAt() {
-        return restTransConfig.getUpdatedAt();
+    @Override
+    public MTServiceData getMTServiceData() {
+        return mtService;
     }
 
     /**
@@ -58,16 +63,16 @@ public class TranslationConfigDataImpl extends TranslationConfigData {
      * @author Yoshito Umaoka
      */
     static class RestTranslationConfigData extends RestObject {
-        private RestMTServiceData mtService;
+        private RestMTServiceData restMTService;
 
         /**
          * No-args constructor used by JSON unmarshaller
          */
-        private RestTranslationConfigData() {
+        RestTranslationConfigData() {
         }
 
         public RestMTServiceData getMTService() {
-            return mtService;
+            return restMTService;
         }
     }
 
@@ -84,7 +89,7 @@ public class TranslationConfigDataImpl extends TranslationConfigData {
         /**
          * No-args constructor used by JSON unmarshaller
          */
-        private RestMTServiceData() {
+        RestMTServiceData() {
         }
 
         public String getServiceInstanceId() {
