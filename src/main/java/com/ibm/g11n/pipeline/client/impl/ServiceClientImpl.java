@@ -59,6 +59,7 @@ import com.ibm.g11n.pipeline.client.LanguageMetrics;
 import com.ibm.g11n.pipeline.client.MTServiceBindingData;
 import com.ibm.g11n.pipeline.client.NewBundleData;
 import com.ibm.g11n.pipeline.client.NewResourceEntryData;
+import com.ibm.g11n.pipeline.client.NewTranslationConfigData;
 import com.ibm.g11n.pipeline.client.NewUserData;
 import com.ibm.g11n.pipeline.client.ResourceEntryData;
 import com.ibm.g11n.pipeline.client.ResourceEntryDataChangeSet;
@@ -67,6 +68,7 @@ import com.ibm.g11n.pipeline.client.ServiceAccount;
 import com.ibm.g11n.pipeline.client.ServiceClient;
 import com.ibm.g11n.pipeline.client.ServiceException;
 import com.ibm.g11n.pipeline.client.ServiceInfo;
+import com.ibm.g11n.pipeline.client.ServiceInstanceInfo;
 import com.ibm.g11n.pipeline.client.TranslationConfigData;
 import com.ibm.g11n.pipeline.client.TranslationStatus;
 import com.ibm.g11n.pipeline.client.UserData;
@@ -75,6 +77,7 @@ import com.ibm.g11n.pipeline.client.impl.BundleDataImpl.RestBundle;
 import com.ibm.g11n.pipeline.client.impl.MTServiceBindingDataImpl.RestMTServiceBinding;
 import com.ibm.g11n.pipeline.client.impl.ResourceEntryDataImpl.RestResourceEntry;
 import com.ibm.g11n.pipeline.client.impl.ServiceInfoImpl.ExternalServiceInfoImpl.RestExternalServiceInfo;
+import com.ibm.g11n.pipeline.client.impl.ServiceInstanceInfoImpl.RestServiceInstanceInfo;
 import com.ibm.g11n.pipeline.client.impl.ServiceResponse.Status;
 import com.ibm.g11n.pipeline.client.impl.TranslationConfigDataImpl.RestTranslationConfigData;
 import com.ibm.g11n.pipeline.client.impl.UserDataImpl.RestUser;
@@ -113,6 +116,29 @@ public class ServiceClientImpl extends ServiceClient {
         }
 
         return new ServiceInfoImpl(resp.supportedTranslation, resp.externalServices);
+    }
+
+    //
+    // Instance API
+    //
+
+    private static class GetServiceInstanceInfoResponse extends ServiceResponse {
+        RestServiceInstanceInfo instance;
+    }
+
+    @Override
+    public ServiceInstanceInfo getServiceInstanceInfo() throws ServiceException {
+        GetServiceInstanceInfoResponse resp = invokeApi(
+                "GET",
+                account.getInstanceId() + "/v2/instance/info",
+                null,
+                GetServiceInstanceInfoResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+
+        return new ServiceInstanceInfoImpl(resp.instance);
     }
 
     //
@@ -726,11 +752,11 @@ public class ServiceClientImpl extends ServiceClient {
     }
 
     private static class TranslationConfigsResponse extends ServiceResponse {
-        Map<String, Map<String, TranslationConfigData>> translationConfigs;
+        Map<String, Map<String, NewTranslationConfigData>> translationConfigs;
     }
 
     @Override
-    public Map<String, Map<String, TranslationConfigData>> getAllTranslationConfigs()
+    public Map<String, Map<String, NewTranslationConfigData>> getAllTranslationConfigs()
             throws ServiceException {
         TranslationConfigsResponse resp = invokeApi(
                 "GET",
@@ -767,13 +793,13 @@ public class ServiceClientImpl extends ServiceClient {
 
     @Override
     public void putTranslationConfig(String sourceLanguage, String targetLanguage,
-            TranslationConfigData configData) throws ServiceException {
+            NewTranslationConfigData configData) throws ServiceException {
         if (configData == null) {
             throw new IllegalArgumentException("configData must be specified");
         }
 
-        Gson gson = createGson(TranslationConfigData.class.getName());
-        String jsonBody = gson.toJson(configData, TranslationConfigData.class);
+        Gson gson = createGson(NewTranslationConfigData.class.getName());
+        String jsonBody = gson.toJson(configData, NewTranslationConfigData.class);
 
         ServiceResponse resp = invokeApi(
                 "PUT",

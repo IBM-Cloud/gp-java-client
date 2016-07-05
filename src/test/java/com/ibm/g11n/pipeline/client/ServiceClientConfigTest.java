@@ -35,6 +35,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import com.ibm.g11n.pipeline.client.NewTranslationConfigData.NewMTServiceData;
 import com.ibm.g11n.pipeline.client.TranslationConfigData.MTServiceData;
 
 /**
@@ -74,9 +75,9 @@ public class ServiceClientConfigTest extends AbstractServiceClientTest {
 
                 // external service binding is available
                 if (WATSON_GUID != null || CAPITA_GUID != null) {
-                    Map<String, Map<String, TranslationConfigData>> allConfigs =
+                    Map<String, Map<String, NewTranslationConfigData>> allConfigs =
                             client.getAllTranslationConfigs();
-                    Map<String, TranslationConfigData> langConfig = allConfigs.get(TEST_CONFIG_SRC);
+                    Map<String, NewTranslationConfigData> langConfig = allConfigs.get(TEST_CONFIG_SRC);
                     if (langConfig == null) {
                         TEST_CONFIG = true;
                     } else {
@@ -98,9 +99,9 @@ public class ServiceClientConfigTest extends AbstractServiceClientTest {
     @After
     public void cleanupTestTransConfig() throws ServiceException {
         if (TEST_CONFIG) {
-            Map<String, Map<String, TranslationConfigData>> allConfigs =
+            Map<String, Map<String, NewTranslationConfigData>> allConfigs =
                     client.getAllTranslationConfigs();
-            Map<String, TranslationConfigData> langConfig = allConfigs.get(TEST_CONFIG_SRC);
+            Map<String, NewTranslationConfigData> langConfig = allConfigs.get(TEST_CONFIG_SRC);
             if (langConfig != null && langConfig.containsKey(TEST_CONFIG_TGT)) {
                 client.deleteTranslationConfig(TEST_CONFIG_SRC, TEST_CONFIG_TGT);
             }
@@ -198,11 +199,11 @@ public class ServiceClientConfigTest extends AbstractServiceClientTest {
     @Test
     public void getAllTranslationConfig_Configs_TestLangPairShouldNotExist() throws ServiceException {
         assumeTrue(TEST_CONFIG);
-        Map<String, Map<String, TranslationConfigData>> allConfigs = client.getAllTranslationConfigs();
+        Map<String, Map<String, NewTranslationConfigData>> allConfigs = client.getAllTranslationConfigs();
         assertNotNull("getAllTranslationConfigs should not return null", allConfigs);
 
         // When TEST_CONFIG is true, config for en-fr should not exist
-        Map<String, TranslationConfigData> testSrcConfigs = allConfigs.get(TEST_CONFIG_SRC);
+        Map<String, NewTranslationConfigData> testSrcConfigs = allConfigs.get(TEST_CONFIG_SRC);
         if (TEST_CONFIG_SRC != null) {
             assertNull("language pair for testing should not exist",
                     testSrcConfigs.get(TEST_CONFIG_TGT));
@@ -327,11 +328,11 @@ public class ServiceClientConfigTest extends AbstractServiceClientTest {
 
     private static void putTestTransConfig(String srcLang, String tgtLang, 
             String mtServiceInstanceId, Map<String, Object> params) throws ServiceException {
-        MTServiceData mtService = new MTServiceData(mtServiceInstanceId);
+        NewMTServiceData mtService = new NewMTServiceData(mtServiceInstanceId);
         if (params != null) {
             mtService.setParams(params);
         }
-        TranslationConfigData transConfig = new TranslationConfigData();
+        NewTranslationConfigData transConfig = new NewTranslationConfigData();
         transConfig.setMTServiceData(mtService);
         client.putTranslationConfig(srcLang, tgtLang, transConfig);
     }
@@ -349,6 +350,6 @@ public class ServiceClientConfigTest extends AbstractServiceClientTest {
         assertNotNull("MT service data should not be null", mtServiceData);
         assertEquals("MT service instance ID should match", expInstanceId,
                 mtServiceData.getServiceInstanceId());
-        assertEquals("MT service params should match", expParams, mtServiceData.params);
+        assertEquals("MT service params should match", expParams, mtServiceData.getParams());
     }
 }

@@ -15,62 +15,106 @@
  */
 package com.ibm.g11n.pipeline.client;
 
-import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
- * <code>TranslationConfigData</code> represents translation configuration
- * for each translation source/target language pair.
+ * <code>TranslationConfigData</code> provides a read only access to translation
+ * configuration for each source/target language pair.
  * 
  * @author Yoshito Umaoka
  */
-public class TranslationConfigData {
-    private MTServiceData mtService;
+public abstract class TranslationConfigData {
+    private final String updatedBy;
+    private final Date updatedAt;
 
-    protected TranslationConfigData() {
+    /**
+     * Protected constructor for a subclass extending <code>TranslationConfigData</code>.
+     * 
+     * @param updatedBy The last user updated this translation configuration.
+     * @param updatedAt The last date when this translation configuration was updated.
+     */
+    protected TranslationConfigData(String updatedBy, Date updatedAt) {
+        this.updatedBy = updatedBy;
+        this.updatedAt = updatedAt;
     }
 
-    public void setMTServiceData(MTServiceData mtService) {
-        this.mtService = mtService;
+    public abstract MTServiceData getMTServiceData();
+
+    /**
+     * Returns the last user updated this translation configuration.
+     * 
+     * @return The last user updated this translation configuration.
+     */
+    public final String getUpdatedBy() {
+        return updatedBy;
     }
 
-    public MTServiceData getMTServiceData() {
-        return mtService;
+    /**
+     * Returns the last date when this translation configuration was updated.
+     * 
+     * @return The last date when this translation configuration was updated.
+     */
+    public final Date getUpdatedAt() {
+        return updatedAt;
     }
 
-    public String getUpdatedBy() {
-        return null;
-    }
+    public static abstract class MTServiceData {
+        private final String serviceInstanceId;
+        protected final String updatedBy;
+        protected final Date updatedAt;
 
-    public Date getUpdatedAt() {
-        return null;
-    }
-
-    public static class MTServiceData {
-        private String serviceInstanceId;
-        protected Map<String, Object> params;
-        protected String updatedBy; // only set by subclass
-        protected Date updatedAt;   // only set by subclass
-
-        public MTServiceData(String serviceInstanceId) {
+        /**
+         * Protected constructor for a subclass extending <code>MTServiceData</code>.
+         * 
+         * @param serviceInstanceId The ID of machine translation service instance.
+         * @param updatedBy The last user updated this machine translation service
+         *                  configuration.
+         * @param updatedAt The last date when this machine translation service
+         *                  configuration was updated.
+         */
+        public MTServiceData(String serviceInstanceId, String updatedBy, Date updatedAt) {
             this.serviceInstanceId = serviceInstanceId;
+            this.updatedBy = updatedBy;
+            this.updatedAt = updatedAt;
         }
 
-        public String getServiceInstanceId() {
+        /**
+         * Returns the ID of machine translation service instance.
+         * 
+         * @return The ID of machine translation service instance.
+         */
+        public final String getServiceInstanceId() {
             return serviceInstanceId;
         }
 
-        public void setParams(Map<String, Object> params) {
-            this.params = new HashMap<>(params);
+        /**
+         * Returns a map containing optional parameters (key/value pairs) that will
+         * be passed to the translation service instance.
+         * 
+         * @return A map containing optional parameters (key/value pairs) that will
+         * be passed to the translation service instance.
+         */
+        public abstract Map<String, Object> getParams();
+
+        /**
+         * Returns the last user updated this machine translation service configuration.
+         * 
+         * @return The last user updated this machine translation service configuration.
+         */
+        public final String getUpdatedBy() {
+            return updatedBy;
         }
 
-        public Map<String, Object> getParams() {
-            if (params == null) {
-                return null;
-            }
-            return Collections.unmodifiableMap(params);
+        /**
+         * Returns the last date when this machine translation service configuration
+         * was updated.
+         * 
+         * @return The last date when this machine translation service configuration was
+         * updated.
+         */
+        public final Date getUpdatedAt() {
+            return updatedAt;
         }
     }
 }

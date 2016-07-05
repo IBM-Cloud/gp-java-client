@@ -24,7 +24,7 @@ import com.ibm.g11n.pipeline.client.MTServiceBindingData;
  * 
  * @author Yoshito Umaoka
  */
-public class MTServiceBindingDataImpl extends MTServiceBindingData {
+class MTServiceBindingDataImpl extends MTServiceBindingData {
 
     private final RestMTServiceBinding mtServiceBinding;
 

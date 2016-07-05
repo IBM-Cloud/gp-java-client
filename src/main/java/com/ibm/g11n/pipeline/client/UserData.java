@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * <code>UserData</code> provides read access to service user's
+ * <code>UserData</code> provides read access to the service user's
  * properties.
  * 
  * @author Yoshito Umaoka
