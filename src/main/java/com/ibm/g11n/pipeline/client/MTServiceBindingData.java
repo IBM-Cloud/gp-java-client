@@ -20,7 +20,7 @@ import java.util.Date;
 import java.util.Map;
 
 /**
- * <code>MTServiceBindingData</code> provides a read access to machine translation service
+ * <code>MTServiceBindingData</code> provides read access to the machine translation service
  * binding data properties.
  * 
  * @author Yoshito Umaoka

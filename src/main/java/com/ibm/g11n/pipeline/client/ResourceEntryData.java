@@ -19,7 +19,7 @@ import java.util.Date;
 import java.util.Map;
 
 /**
- * <code>ResourceEntryData</code> provides a read access to resource entry's
+ * <code>ResourceEntryData</code> provides read access to the resource entry's
  * properties.
  * 
  * @author Yoshito Umaoka

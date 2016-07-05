@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * <code>BundleData</code> provides a read access to translation bundle's
+ * <code>BundleData</code> provides read access to the translation bundle's
  * properties.
  * 
  * @author Yoshito Umaoka

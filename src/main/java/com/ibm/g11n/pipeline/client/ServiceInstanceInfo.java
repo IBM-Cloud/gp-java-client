@@ -18,7 +18,7 @@ package com.ibm.g11n.pipeline.client;
 import java.util.Date;
 
 /**
- * <code>ServiceInstanceInfo</code> provides a read access to a service instance's
+ * <code>ServiceInstanceInfo</code> provides read access to the service instance's
  * properties.
  * 
  * @author Yoshito Umaoka
@@ -33,7 +33,7 @@ public abstract class ServiceInstanceInfo {
     private final boolean disabled;
 
     /**
-     * <code>UsageData</code> provides a read access to a service instance's
+     * <code>UsageData</code> provides read access to the service instance's
      * usage information.
      * 
      * @author Yoshito Umaoka
