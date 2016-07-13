@@ -26,7 +26,6 @@ This SDK provides JDK ResourceBundle integration and Java APIs for accessing
 Globalization Pipeline's REST endpoints.
 
 ## Custom ResourceBundle implementation
----
 
 In a Java applications, localized UI strings are usually stored in Java
 resource bundle class files or in Java properties files. These localized
@@ -40,7 +39,6 @@ This SDK contains an implementation of ResourceBundle.Control which looks up and
 load resource strings from an instance of Globalization Pipeline service.
 
 ## Java APIs for Globalization Pipeline REST endpoints
----
 
 Globalization Pipeline provides
 [REST APIs](https://gp-rest.ng.bluemix.net/translate/swagger/index.html).
@@ -61,14 +59,12 @@ instance, create a new bundle, and access the translated messages.
 # Usage
 
 ## Minimum requirements
----
 
 This library requires Java 7 or later version of Java Runtime Environment.
 
 To build the library from the source files, JDK 8 is required.
 
 ## Accessing translated resources from a Bluemix Java application
----
 
 Once a new bundle is created, and the contents in the source language is uploaded, your
 Java application can use the translated results through Java's standard
@@ -84,7 +80,6 @@ Your original code may look like below:
     String msg = rb.getString("msg1");
 
 ### Using ResourceBundleControlProvider SPI (Java 8 or later)
----
 
 This SDK implements
 [ResourceBundelControlProvider](https://docs.oracle.com/javase/8/docs/api/java/util/spi/ResourceBundleControlProvider.html)
@@ -114,7 +109,6 @@ Please also refer Java Tutorials article
 about the service provider interface and configuration in general.
 
 ### Using CloudResourceBundleControl
----
 
 If your application is running on JRE 7 or you want to limit the use of Globalization Pipeline
 service to specific bundles, then you can use the custom
