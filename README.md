@@ -17,6 +17,7 @@
 -->
 Java Client SDK for Globalization Pipeline on IBM Bluemix
 ==
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/com.ibm.g11n.pipeline/gp-java-client/badge.svg?style=flat)](https://maven-badges.herokuapp.com/maven-central/com.ibm.g11n.pipeline/gp-java-client)
 
 # What is this?
 
@@ -156,7 +157,7 @@ CloudResourceBundleControl.getInstance(). For example,
 # Community
 
 * View or file GitHub [Issues](https://github.com/IBM-Bluemix/gp-java-client/issues)
-* Connect with the open source community on [developerWorks Open](https://developer.ibm.com/open/ibm-bluemix-globalization-pipeline-service/python-sdk/)
+* Connect with the open source community on [developerWorks Open](https://developer.ibm.com/open/ibm-bluemix-globalization-pipeline-service/java-sdk/)
 
 # Contributing
 
