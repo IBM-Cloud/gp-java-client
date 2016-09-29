@@ -87,8 +87,10 @@ This SDK implements
 introduced in Java 8. With the provider implementation, you can retrieve translated resource
 strings stored in a Globalization Pipeline project without any code changes.
 
-To enable this feature, you can put the SDK jar file (and the dependencies - for now, GSON
-jar file only) into Java's extension directory.
+To enable this feature, you can put the SDK jar file(s) into Java's extension directory.
+The SDK is distributed in two different formats - gp-java-client-X.X.X.jar and
+gp-java-client-X.X.X-jar-with-dependencies.jar. If you use the one wihout dependencies,
+you also need to put the dependencies (for now, Gson and Guava) in the same directory.
 
 If the application is running on Bluemix, then what you need is to package the SDK jar file
 (and the dependencies) in your application to the JRE overlay directory corresponding to
