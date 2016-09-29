@@ -41,8 +41,8 @@ import java.util.TreeMap;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
-import javax.xml.bind.DatatypeConverter;
 
+import com.google.common.io.BaseEncoding;
 import com.google.common.net.UrlEscapers;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -983,7 +983,7 @@ public class ServiceClientImpl extends ServiceClient {
         }
         String token = uid + ":" + secret;
         try {
-            return DatatypeConverter.printBase64Binary(token.getBytes("ISO-8859-1"));
+            return BaseEncoding.base64().encode(token.getBytes("ISO-8859-1"));
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -1030,7 +1030,7 @@ public class ServiceClientImpl extends ServiceClient {
 
             // signing
             byte[] hmac = mac.doFinal(msg);
-            credential.append(DatatypeConverter.printBase64Binary(hmac));
+            credential.append(BaseEncoding.base64().encode(hmac));
         } catch (IOException e) {
             throw new RuntimeException(e);
         } catch (NoSuchAlgorithmException e) {
