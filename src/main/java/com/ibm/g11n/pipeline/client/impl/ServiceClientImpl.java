@@ -43,6 +43,7 @@ import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
 
+import com.google.common.net.UrlEscapers;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.InstanceCreator;
@@ -130,7 +131,7 @@ public class ServiceClientImpl extends ServiceClient {
     public ServiceInstanceInfo getServiceInstanceInfo() throws ServiceException {
         GetServiceInstanceInfoResponse resp = invokeApi(
                 "GET",
-                account.getInstanceId() + "/v2/instance/info",
+                escapePathSegment(account.getInstanceId()) + "/v2/instance/info",
                 null,
                 GetServiceInstanceInfoResponse.class);
 
@@ -153,7 +154,7 @@ public class ServiceClientImpl extends ServiceClient {
     public Set<String> getBundleIds() throws ServiceException {
         GetBundleListResponse resp = invokeApi(
                 "GET",
-                account.getInstanceId() + "/v2/bundles",
+                escapePathSegment(account.getInstanceId()) + "/v2/bundles",
                 null,
                 GetBundleListResponse.class);
 
@@ -178,7 +179,8 @@ public class ServiceClientImpl extends ServiceClient {
         String jsonBody = gson.toJson(newBundleData, NewBundleData.class);
         ServiceResponse resp = invokeApi(
                 "PUT",
-                account.getInstanceId() + "/v2/bundles/" + bundleId,
+                escapePathSegment(account.getInstanceId()) + "/v2/bundles/"
+                    + escapePathSegment(bundleId),
                 jsonBody,
                 ServiceResponse.class);
 
@@ -199,7 +201,8 @@ public class ServiceClientImpl extends ServiceClient {
 
         GetBundleInfoResponse resp = invokeApi(
                 "GET",
-                account.getInstanceId() + "/v2/bundles/" + bundleId,
+                escapePathSegment(account.getInstanceId()) + "/v2/bundles/"
+                    + escapePathSegment(bundleId),
                 null,
                 GetBundleInfoResponse.class);
 
@@ -224,7 +227,8 @@ public class ServiceClientImpl extends ServiceClient {
 
         GetBundleMetricsResponse resp = invokeApi(
                 "GET",
-                account.getInstanceId() + "/v2/bundles/" + bundleId
+                escapePathSegment(account.getInstanceId()) + "/v2/bundles/"
+                    + escapePathSegment(bundleId)
                     + "?fields=translationStatusMetricsByLanguage,reviewStatusMetricsByLanguage,partnerStatusMetricsByLanguage",
                 null,
                 GetBundleMetricsResponse.class);
@@ -253,7 +257,8 @@ public class ServiceClientImpl extends ServiceClient {
         String jsonBody = gson.toJson(changeSet, BundleDataChangeSet.class);
         ServiceResponse resp = invokeApi(
                 "POST",
-                account.getInstanceId() + "/v2/bundles/" + bundleId,
+                escapePathSegment(account.getInstanceId()) + "/v2/bundles/"
+                    + escapePathSegment(bundleId),
                 jsonBody,
                 ServiceResponse.class);
 
@@ -270,7 +275,8 @@ public class ServiceClientImpl extends ServiceClient {
 
         GetBundleInfoResponse resp = invokeApi(
                 "DELETE",
-                account.getInstanceId() + "/v2/bundles/" + bundleId,
+                escapePathSegment(account.getInstanceId()) + "/v2/bundles/"
+                    + escapePathSegment(bundleId),
                 null,
                 GetBundleInfoResponse.class);
 
@@ -295,9 +301,9 @@ public class ServiceClientImpl extends ServiceClient {
 
         StringBuilder endpoint = new StringBuilder();
         endpoint
-            .append(account.getInstanceId())
+            .append(escapePathSegment(account.getInstanceId()))
             .append("/v2/bundles/")
-            .append(bundleId)
+            .append(escapePathSegment(bundleId))
             .append("/")
             .append(language);
         if (fallback) {
@@ -333,7 +339,8 @@ public class ServiceClientImpl extends ServiceClient {
 
         GetResourceEntriesResponse resp = invokeApi(
                 "GET",
-                account.getInstanceId() + "/v2/bundles/" + bundleId + "/" + language
+                escapePathSegment(account.getInstanceId()) + "/v2/bundles/"
+                    + escapePathSegment(bundleId) + "/" + language
                     + "?fields=resourceEntries",
                 null,
                 GetResourceEntriesResponse.class);
@@ -370,7 +377,8 @@ public class ServiceClientImpl extends ServiceClient {
 
         GetLanguageMetricsResponse resp = invokeApi(
                 "GET",
-                account.getInstanceId() + "/v2/bundles/" + bundleId + "/" + language
+                escapePathSegment(account.getInstanceId()) + "/v2/bundles/"
+                    + escapePathSegment(bundleId) + "/" + language
                     + "?fields=translationStatusMetrics,reviewStatusMetrics,partnerStatusMetrics",
                 null,
                 GetLanguageMetricsResponse.class);
@@ -422,7 +430,8 @@ public class ServiceClientImpl extends ServiceClient {
         String jsonBody = gson.toJson(newResourceEntries, Map.class);
         ServiceResponse resp = invokeApi(
                 "PUT",
-                account.getInstanceId() + "/v2/bundles/" + bundleId + "/" + language,
+                escapePathSegment(account.getInstanceId()) + "/v2/bundles/"
+                    + escapePathSegment(bundleId) + "/" + language,
                 jsonBody,
                 ServiceResponse.class);
 
@@ -478,7 +487,8 @@ public class ServiceClientImpl extends ServiceClient {
 
         ServiceResponse resp = invokeApi(
                 "POST",
-                account.getInstanceId() + "/v2/bundles/" + bundleId + "/" + language,
+                escapePathSegment(account.getInstanceId()) + "/v2/bundles/"
+                    + escapePathSegment(bundleId) + "/" + language,
                 jsonBody,
                 ServiceResponse.class);
 
@@ -506,8 +516,9 @@ public class ServiceClientImpl extends ServiceClient {
 
         GetResourceEntryResponse resp = invokeApi(
                 "GET",
-                account.getInstanceId() + "/v2/bundles/" + bundleId + "/" + language
-                    + "/" + resKey,
+                escapePathSegment(account.getInstanceId()) + "/v2/bundles/"
+                    + escapePathSegment(bundleId) + "/" + language
+                    + "/" + escapePathSegment(resKey),
                 null,
                 GetResourceEntryResponse.class);
 
@@ -539,8 +550,9 @@ public class ServiceClientImpl extends ServiceClient {
         String jsonBody = gson.toJson(changeSet, ResourceEntryDataChangeSet.class);
         ServiceResponse resp = invokeApi(
                 "POST",
-                account.getInstanceId() + "/v2/bundles/" + bundleId + "/" + language
-                    + "/" + resKey,
+                escapePathSegment(account.getInstanceId()) + "/v2/bundles/"
+                    + escapePathSegment(bundleId) + "/" + language
+                    + "/" + escapePathSegment(resKey),
                 jsonBody,
                 ServiceResponse.class);
 
@@ -561,7 +573,7 @@ public class ServiceClientImpl extends ServiceClient {
     public Map<String, UserData> getUsers() throws ServiceException {
         GetUsersResponse resp = invokeApi(
                 "GET",
-                account.getInstanceId() + "/v2/users",
+                escapePathSegment(account.getInstanceId()) + "/v2/users",
                 null,
                 GetUsersResponse.class);
 
@@ -596,7 +608,7 @@ public class ServiceClientImpl extends ServiceClient {
         String jsonBody = gson.toJson(newUserData, NewUserData.class);
         UserResponse resp = invokeApi(
                 "POST",
-                account.getInstanceId() + "/v2/users/new",
+                escapePathSegment(account.getInstanceId()) + "/v2/users/new",
                 jsonBody,
                 UserResponse.class);
 
@@ -615,7 +627,8 @@ public class ServiceClientImpl extends ServiceClient {
 
         UserResponse resp = invokeApi(
                 "GET",
-                account.getInstanceId() + "/v2/users/" + userId,
+                escapePathSegment(account.getInstanceId()) + "/v2/users/"
+                    + escapePathSegment(userId),
                 null,
                 UserResponse.class);
 
@@ -638,9 +651,9 @@ public class ServiceClientImpl extends ServiceClient {
 
         StringBuilder endpoint = new StringBuilder();
         endpoint
-            .append(account.getInstanceId())
+            .append(escapePathSegment(account.getInstanceId()))
             .append("/v2/users/")
-            .append(userId);
+            .append(escapePathSegment(userId));
         if (resetPassword) {
             endpoint.append("?resetPassword=true");
         }
@@ -674,7 +687,8 @@ public class ServiceClientImpl extends ServiceClient {
 
         ServiceResponse resp = invokeApi(
                 "DELETE",
-                account.getInstanceId() + "/v2/users/" + userId,
+                escapePathSegment(account.getInstanceId()) + "/v2/users/"
+                    + escapePathSegment(userId),
                 null,
                 ServiceResponse.class);
 
@@ -696,7 +710,7 @@ public class ServiceClientImpl extends ServiceClient {
     public Map<String, MTServiceBindingData> getAllMTServiceBindings() throws ServiceException {
         MTBindingsResponse resp = invokeApi(
                 "GET",
-                account.getInstanceId() + "/v2/config/mt",
+                escapePathSegment(account.getInstanceId()) + "/v2/config/mt",
                 null,
                 MTBindingsResponse.class);
 
@@ -720,7 +734,7 @@ public class ServiceClientImpl extends ServiceClient {
             throws ServiceException {
         AvailableMTLanguagesResponse resp = invokeApi(
                 "GET",
-                account.getInstanceId() + "/v2/config/mt",
+                escapePathSegment(account.getInstanceId()) + "/v2/config/mt",
                 null,
                 AvailableMTLanguagesResponse.class);
 
@@ -740,7 +754,8 @@ public class ServiceClientImpl extends ServiceClient {
             throws ServiceException {
         GetMTServiceBindingResponse resp = invokeApi(
                 "GET",
-                account.getInstanceId() + "/v2/config/mt/" + mtServiceInstanceId,
+                escapePathSegment(account.getInstanceId()) + "/v2/config/mt/"
+                    + escapePathSegment(mtServiceInstanceId),
                 null,
                 GetMTServiceBindingResponse.class);
 
@@ -760,7 +775,7 @@ public class ServiceClientImpl extends ServiceClient {
             throws ServiceException {
         TranslationConfigsResponse resp = invokeApi(
                 "GET",
-                account.getInstanceId() + "/v2/config/trans",
+                escapePathSegment(account.getInstanceId()) + "/v2/config/trans",
                 null,
                 TranslationConfigsResponse.class);
 
@@ -780,7 +795,7 @@ public class ServiceClientImpl extends ServiceClient {
             throws ServiceException {
         ConfiguredMTLanguagesResponse resp = invokeApi(
                 "GET",
-                account.getInstanceId() + "/v2/config/trans",
+                escapePathSegment(account.getInstanceId()) + "/v2/config/trans",
                 null,
                 ConfiguredMTLanguagesResponse.class);
 
@@ -803,7 +818,8 @@ public class ServiceClientImpl extends ServiceClient {
 
         ServiceResponse resp = invokeApi(
                 "PUT",
-                account.getInstanceId() + "/v2/config/trans/" + sourceLanguage + "/" + targetLanguage,
+                escapePathSegment(account.getInstanceId()) + "/v2/config/trans/"
+                    + sourceLanguage + "/" + targetLanguage,
                 jsonBody,
                 ServiceResponse.class);
 
@@ -821,7 +837,8 @@ public class ServiceClientImpl extends ServiceClient {
             String targetLanguage) throws ServiceException {
         TranslationConfigResponse resp = invokeApi(
                 "GET",
-                account.getInstanceId() + "/v2/config/trans/" + sourceLanguage + "/" + targetLanguage,
+                escapePathSegment(account.getInstanceId()) + "/v2/config/trans/"
+                    + sourceLanguage + "/" + targetLanguage,
                 null,
                 TranslationConfigResponse.class);
 
@@ -838,7 +855,8 @@ public class ServiceClientImpl extends ServiceClient {
             String targetLanguage) throws ServiceException {
         ServiceResponse resp = invokeApi(
                 "DELETE",
-                account.getInstanceId() + "/v2/config/trans/" + sourceLanguage + "/" + targetLanguage,
+                escapePathSegment(account.getInstanceId()) + "/v2/config/trans/"
+                    + sourceLanguage + "/" + targetLanguage,
                 null,
                 ServiceResponse.class);
 
@@ -914,11 +932,12 @@ public class ServiceClientImpl extends ServiceClient {
 
             // receiving response
 
-            // int httpStatus = conn.getResponseCode();
+            int httpStatus = conn.getResponseCode();
 
             String ctype = conn.getContentType();
-            if (!ctype.equalsIgnoreCase("application/json")) {
-                throw new ServiceException("Received non-JSON response from " + method + " " + urlStr);
+            if (ctype == null || !ctype.equalsIgnoreCase("application/json")) {
+                throw new ServiceException("Received HTTP status: " + httpStatus
+                        + " with non-JSON response from " + method + " " + urlStr);
             } else {
                 InputStream is = conn.getErrorStream();
                 if (is == null) {
@@ -1132,5 +1151,9 @@ public class ServiceClientImpl extends ServiceClient {
         builder.registerTypeAdapterFactory(new NullMapValueTypeAdapterFactory());
 
         return builder.create();
+    }
+
+    private static String escapePathSegment(String pathSegment) {
+        return UrlEscapers.urlPathSegmentEscaper().escape(pathSegment);
     }
 }
