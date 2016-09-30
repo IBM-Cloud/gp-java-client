@@ -1,6 +1,6 @@
 /**
  * Provides Java APIs for accessing
- * <a href="https://gp-beta-rest.ng.bluemix.net/translate/swagger/index.html">IBM
+ * <a href="https://gp-rest.ng.bluemix.net/translate/swagger/index.html">IBM
  * Globalization Pipeline's REST endpoints</a> which allow you to create, read, modify
  * and delete translation bundles, resource strings and users.
  * <p>
