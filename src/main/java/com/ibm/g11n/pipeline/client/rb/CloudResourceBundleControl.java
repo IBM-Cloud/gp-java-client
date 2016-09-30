@@ -423,7 +423,7 @@ public final class CloudResourceBundleControl extends Control {
 
         if (locale.getLanguage().isEmpty()) {
             // Globalization Pipeline does not support a locale
-            // without no language code, including root locale
+            // with no language code, including root locale
             return null;
         }
 
