@@ -54,7 +54,7 @@ public final class CloudResourceBundle extends ResourceBundle {
             Map<String, String> resStrings = client.getResourceStrings(bundleId, locale.toLanguageTag(), false);
             crb = new CloudResourceBundle(resStrings);
         } catch (ServiceException e) {
-            logger.warning("An error occurred while loading resource data for " + locale
+            logger.info("Could not fetch resource data for " + locale
                     + " from the translation bundle " + bundleId + ": " + e.getMessage());
         }
         return crb;
