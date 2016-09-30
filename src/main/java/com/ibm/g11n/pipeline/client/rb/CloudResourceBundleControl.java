@@ -18,22 +18,15 @@ package com.ibm.g11n.pipeline.client.rb;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.ResourceBundle;
 import java.util.ResourceBundle.Control;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import com.ibm.g11n.pipeline.client.ServiceAccount;
-import com.ibm.g11n.pipeline.client.ServiceClient;
-import com.ibm.g11n.pipeline.client.ServiceException;
-import com.ibm.g11n.pipeline.client.ServiceInfo;
 
 /**
  * <code>CloudResourceBundleControl</code> is a concrete subclass of {@link Control}.
@@ -92,9 +85,6 @@ public final class CloudResourceBundleControl extends Control {
             return formatList;
         }
     };
-
-    private static final ConcurrentHashMap<String, Set<Locale>> SUPPORTED_LOCALES =
-            new ConcurrentHashMap<String, Set<Locale>>();
 
     /**
      * Default resource bundle cache expiration time (60000 = 10 minutes)
@@ -421,57 +411,30 @@ public final class CloudResourceBundleControl extends Control {
     public ResourceBundle newBundle(String baseName, Locale locale, String format, ClassLoader loader, boolean reload)
         throws IllegalAccessException, InstantiationException, IOException {
 
-        if (!format.equals(FORMAT_GP_CLOUD_BUNDLE)
-                || isExcluded(baseName)) {
+        if (!format.equals(FORMAT_GP_CLOUD_BUNDLE)) {
+            // When requested resource format is not GP cloud bundle,
+            // just delegate the request to the Java's default implementation.
             return super.newBundle(baseName, locale, format, loader, reload);
         }
 
-        if (!isLocaleSupportedByService(locale)) {
+        if (isExcluded(baseName)) {
             return null;
         }
 
+        if (locale.getLanguage().isEmpty()) {
+            // Globalization Pipeline does not support a locale
+            // without no language code, including root locale
+            return null;
+        }
+
+        // Map the input baseName to GP's bundleId if NameMapper is available
         String bundleId = nameMapper != null ? nameMapper.getBundleID(baseName) : baseName;
         if (bundleId == null) {
             return null;
         }
+
         // loadBundle returns null if locale is not available
         return CloudResourceBundle.loadBundle(serviceAccount, bundleId, locale);
-    }
-
-    /**
-     * Returns if the specified locale is supported by the service.
-     * This implementation calls $service/v2/info endpoint and cache the
-     * results. This method returns true if the specified locale is included
-     * in the supported language list (both source/target). It does not
-     * mean the specified language is available in a specific translation bundle.
-     * 
-     * @param locale The locale.
-     * @return true if the specified locale is supported by the service.
-     */
-    private boolean isLocaleSupportedByService(Locale locale) {
-        String url = serviceAccount.getUrl();
-        Set<Locale> locales = SUPPORTED_LOCALES.get(url);
-        if (locales == null) {
-            ServiceClient client = ServiceClient.getInstance(serviceAccount);
-            try {
-                ServiceInfo svcInfo = client.getServiceInfo();
-                locales = new HashSet<Locale>();
-                Map<String, Set<String>> supported = svcInfo.getSupportedTranslation();
-                if (supported != null) {
-                    for (Entry<String, Set<String>> targetsBySource : supported.entrySet()) {
-                        String src = targetsBySource.getKey();
-                        locales.add(Locale.forLanguageTag(src));
-                        for (String target : targetsBySource.getValue()) {
-                            locales.add(Locale.forLanguageTag(target));
-                        }
-                    }
-                }
-                SUPPORTED_LOCALES.putIfAbsent(url, locales);
-            } catch (ServiceException e) {
-                return false;
-            }
-        }
-        return locales.contains(locale);
     }
 
     private boolean isExcluded(String baseName) {

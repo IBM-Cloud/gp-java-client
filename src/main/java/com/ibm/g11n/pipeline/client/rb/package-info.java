@@ -82,6 +82,6 @@
  * classpath can be done by
  * <a href="https://www.ng.bluemix.net/docs/starters/liberty/index.html#customizingjre">Customizing
  * the JRE</a>. The SDK jar file should be placed in resources/.java-overlay/.java/.jre/lib/ext
- * folder in your application pacakge.
+ * folder in your application package.
  */
 package com.ibm.g11n.pipeline.client.rb;
