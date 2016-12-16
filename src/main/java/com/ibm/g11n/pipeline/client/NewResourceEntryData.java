@@ -86,7 +86,7 @@ public class NewResourceEntryData {
      * @param notes The notes for the new resource entry.
      * @return This object.
      */
-    public NewResourceEntryData setNote(List<String> notes) {
+    public NewResourceEntryData setNotes(List<String> notes) {
         this.notes = notes;
         return this;
     }
