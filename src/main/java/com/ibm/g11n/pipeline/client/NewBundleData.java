@@ -1,5 +1,5 @@
 /*  
- * Copyright IBM Corp. 2015
+ * Copyright IBM Corp. 2015, 2016
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.ibm.g11n.pipeline.client;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -28,6 +29,7 @@ import java.util.Set;
 public class NewBundleData {
     private final String sourceLanguage;
     private Set<String> targetLanguages;
+    private List<String> notes;
     private Map<String, String> metadata;
     private String partner;
     private String segmentSeparatorPattern;
@@ -71,6 +73,26 @@ public class NewBundleData {
      */
     public NewBundleData setTargetLanguages(Set<String> targetLanguages) {
         this.targetLanguages = targetLanguages;
+        return this;
+    }
+
+    /**
+     * Returns the notes for the new bundle.
+     * 
+     * @return The notes for the new bundle.
+     */
+    public List<String> getNotes() {
+        return notes;
+    }
+
+    /**
+     * Sets the notes for the new bundle.
+     * 
+     * @param notes The notes for the new bundle.
+     * @return This object.
+     */
+    public NewBundleData setNotes(List<String> notes) {
+        this.notes = notes;
         return this;
     }
 

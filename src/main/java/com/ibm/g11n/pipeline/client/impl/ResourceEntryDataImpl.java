@@ -1,5 +1,5 @@
 /*  
- * Copyright IBM Corp. 2015
+ * Copyright IBM Corp. 2015, 2016
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.ibm.g11n.pipeline.client.impl;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import com.ibm.g11n.pipeline.client.ResourceEntryData;
@@ -35,6 +36,15 @@ class ResourceEntryDataImpl extends ResourceEntryData {
                 resourceEntry.getTranslationStatus(), resourceEntry.isReviewed(),
                 resourceEntry.getUpdatedBy(), resourceEntry.getUpdatedAt());
         this.resourceEntry = resourceEntry;
+    }
+
+    @Override
+    public List<String> getNotes() {
+        List<String> notes = resourceEntry.getNotes();
+        if (notes == null) {
+            return null;
+        }
+        return Collections.unmodifiableList(notes);
     }
 
     @Override
@@ -66,6 +76,7 @@ class ResourceEntryDataImpl extends ResourceEntryData {
         private String sourceValue;
         private boolean reviewed;
         private TranslationStatus translationStatus;
+        private List<String> notes;
         private Map<String, String> metadata;
         private String partnerStatus;
         private Integer sequenceNumber;
@@ -84,6 +95,10 @@ class ResourceEntryDataImpl extends ResourceEntryData {
 
         public TranslationStatus getTranslationStatus() {
             return translationStatus;
+        }
+
+        public List<String> getNotes() {
+            return notes;
         }
 
         public Map<String, String> getMetadata() {

@@ -1,5 +1,4 @@
 /*  
- * Copyright IBM Corp. 2015
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +15,7 @@
 package com.ibm.g11n.pipeline.client;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -90,6 +90,13 @@ public abstract class BundleData {
      * @return The set of target languages.
      */
     public abstract Set<String> getTargetLanguages();
+
+    /**
+     * Returns the notes for this bundle.
+     * 
+     * @return The notes for this bundle.
+     */
+    public abstract List<String> getNotes();
 
     /**
      * Returns the arbitrary metadata represented by string key-value pairs.
