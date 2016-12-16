@@ -1,5 +1,5 @@
 /*  
- * Copyright IBM Corp. 2015
+ * Copyright IBM Corp. 2015, 2016
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.ibm.g11n.pipeline.client;
 
 import java.util.Date;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -108,6 +109,13 @@ public abstract class ResourceEntryData {
     public final Date getUpdatedAt() {
         return updatedAt;
     }
+
+    /**
+     * Returns the notes for this resource entry.
+     * 
+     * @return The notes for this resource entry.
+     */
+    public abstract List<String> getNotes();
 
     /**
      * Returns the arbitrary metadata represented by string key-value pairs.

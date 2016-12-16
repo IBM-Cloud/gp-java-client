@@ -33,8 +33,8 @@ public abstract class AbstractServiceClientTest {
     protected static ServiceClient client = null;
     protected static ServiceAccount account = null;
 
-    // average elapsed time for getBundleIds() - default 2 sec
-    protected static long unitTime = 2000;
+    // average elapsed time for getBundleIds() - default 1 sec
+    protected static long unitTime = 1000;
 
 
     static {
@@ -97,16 +97,20 @@ public abstract class AbstractServiceClientTest {
         return "(" + account.getInstanceId() + ")" + account.getUserId();
     }
 
+    public static long getUnitTime() {
+        return unitTime;
+    }
+
     /*
-     * Checks if the given date is past and within unitTime*units.
-     * unitTime is average elapsed time of getBundleIds() call. 
+     * Checks if the given date is within the plus/minus specified seconds.
      */
-    public static boolean isRecent(Date d, int units) {
+    public static boolean isRecent(Date d, int seconds) {
         long delta = System.currentTimeMillis() - d.getTime();
-        return delta > 0 && delta < unitTime * units;
+        return Math.abs(delta) < 1000 * seconds;
     }
 
     public static boolean isRecent(Date d) {
-        return isRecent(d, 20);
+        // within 30 seconds
+        return isRecent(d, 30);
     }
 }

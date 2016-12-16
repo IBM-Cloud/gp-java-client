@@ -1,5 +1,5 @@
 /*  
- * Copyright IBM Corp. 2015
+ * Copyright IBM Corp. 2015, 2016
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,6 +16,7 @@
 package com.ibm.g11n.pipeline.client.impl;
 
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -43,6 +44,15 @@ class BundleDataImpl extends BundleData {
             return null;
         }
         return Collections.unmodifiableSet(targetLanguages);
+    }
+
+    @Override
+    public List<String> getNotes() {
+        List<String> notes = bundle.getNotes();
+        if (notes == null) {
+            return null;
+        }
+        return Collections.unmodifiableList(notes);
     }
 
     @Override
@@ -78,6 +88,7 @@ class BundleDataImpl extends BundleData {
         private String sourceLanguage;
         private Set<String> targetLanguages;
         private boolean readOnly;
+        private List<String> notes;
         private Map<String, String> metadata;
         private String partner;
         private String segmentSeparatorPattern;
@@ -99,6 +110,10 @@ class BundleDataImpl extends BundleData {
 
         public boolean isReadOnly() {
             return readOnly;
+        }
+
+        public List<String> getNotes() {
+            return notes;
         }
 
         public Map<String, String> getMetadata() {

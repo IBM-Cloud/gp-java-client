@@ -1,5 +1,5 @@
 /*  
- * Copyright IBM Corp. 2015
+ * Copyright IBM Corp. 2015, 2016
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.ibm.g11n.pipeline.client;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -26,6 +27,7 @@ import java.util.Map;
 public class ResourceEntryDataChangeSet {
     private String value;
     private Boolean reviewed;
+    private List<String> notes;
     private Map<String, String> metadata;
     private String partnerStatus;
     private Integer sequenceNumber;
@@ -73,6 +75,26 @@ public class ResourceEntryDataChangeSet {
      */
     public ResourceEntryDataChangeSet setReviewed(Boolean reviewed) {
         this.reviewed = reviewed;
+        return this;
+    }
+
+    /**
+     * Returns the notes for this resource entry.
+     * 
+     * @return The notes for this resource entry.
+     */
+    public List<String> getNotes() {
+        return notes;
+    }
+
+    /**
+     * Sets the notes for this resource entry.
+     * 
+     * @param notes The notes for this resource entry.
+     * @return This object.
+     */
+    public ResourceEntryDataChangeSet setNotes(List<String> notes) {
+        this.notes = notes;
         return this;
     }
 

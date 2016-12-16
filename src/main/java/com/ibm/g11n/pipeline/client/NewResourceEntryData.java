@@ -15,6 +15,7 @@
  */
 package com.ibm.g11n.pipeline.client;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -27,6 +28,7 @@ import java.util.Objects;
 public class NewResourceEntryData {
     private final String value;
     private Boolean reviewed;
+    private List<String> notes;
     private Map<String, String> metadata;
     private String partnerStatus;
     private Integer sequenceNumber;
@@ -66,6 +68,26 @@ public class NewResourceEntryData {
      */
     public NewResourceEntryData setReviewed(Boolean reviewed) {
         this.reviewed = reviewed;
+        return this;
+    }
+
+    /**
+     * Returns the notes for the new resource entry.
+     * 
+     * @return The notes for the new resource entry.
+     */
+    public List<String> getNotes() {
+        return notes;
+    }
+
+    /**
+     * Sets the notes for the new resource entry.
+     * 
+     * @param notes The notes for the new resource entry.
+     * @return This object.
+     */
+    public NewResourceEntryData setNote(List<String> notes) {
+        this.notes = notes;
         return this;
     }
 
