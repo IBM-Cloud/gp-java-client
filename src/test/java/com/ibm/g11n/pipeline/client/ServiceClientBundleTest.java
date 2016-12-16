@@ -830,7 +830,37 @@ public class ServiceClientBundleTest extends AbstractServiceClientTest {
     //
 
     @Test
-    public void uploadResourceEntries_NonExistinBundle_ShouldFail()
+    public void uploadResourceEntries_Notes_ShouldBeSaved()
+            throws ServiceException {
+        String bundleId = testBundleId("bundle1");
+        String source = "en";
+        createBundleWithLanguages(bundleId, source);
+        Map<String, NewResourceEntryData> resources = toNewResourceEntryMap(
+                TEST_RES1, true);
+        // Generate note (comment) for each entry by concatenating "Comment for
+        // " and
+        // key name.
+        String notePrefix = "Comment for ";
+        for (Entry<String, NewResourceEntryData> entry : resources.entrySet()) {
+            String note = notePrefix + entry.getKey();
+            entry.getValue().setNotes(Collections.singletonList(note));
+        }
+        client.uploadResourceEntries(bundleId, source, resources);
+
+        // Download entries
+        Map<String, ResourceEntryData> resultResources = client
+                .getResourceEntries(bundleId, source);
+
+        for (Entry<String, NewResourceEntryData> entry : resources.entrySet()) {
+            String key = entry.getKey();
+            ResourceEntryData resultData = resultResources.get(key);
+            assertNotNull("resource data for " + key, resultData);
+            assertEquals("notes should be saved", entry.getValue().getNotes(), resultData.getNotes());
+        }
+    }
+
+    @Test
+    public void uploadResourceEntries_NonExistingBundle_ShouldFail()
             throws ServiceException {
         String bundleId = testBundleId("bundle0");
         Map<String, NewResourceEntryData> resources = toNewResourceEntryMap(
