@@ -1,0 +1,10 @@
+<?xml version="1.0"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.0" srcLang="en">
+<file id="junit-bundle-xliff-test1">
+<unit id="menu.help">
+<segment>
+<source>Help</source>
+</segment>
+</unit>
+</file>
+</xliff>

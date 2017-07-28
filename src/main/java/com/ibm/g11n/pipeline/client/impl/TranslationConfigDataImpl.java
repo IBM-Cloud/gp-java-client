@@ -63,7 +63,7 @@ class TranslationConfigDataImpl extends TranslationConfigData {
      * @author Yoshito Umaoka
      */
     static class RestTranslationConfigData extends RestObject {
-        private RestMTServiceData restMTService;
+        private RestMTServiceData mtService;
 
         /**
          * No-args constructor used by JSON unmarshaller
@@ -72,7 +72,7 @@ class TranslationConfigDataImpl extends TranslationConfigData {
         }
 
         public RestMTServiceData getMTService() {
-            return restMTService;
+            return mtService;
         }
     }
 

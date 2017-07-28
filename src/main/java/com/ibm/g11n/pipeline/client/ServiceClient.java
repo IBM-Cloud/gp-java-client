@@ -15,6 +15,9 @@
  */
 package com.ibm.g11n.pipeline.client;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -379,7 +382,7 @@ public abstract class ServiceClient {
                     throws ServiceException;
 
     /**
-     * Update resource entries.
+     * Updates resource entries.
      * <p>
      * This method is similar to {@link #updateResourceStrings(String, String, Map, boolean)},
      * but is able to update other resource entry data.
@@ -626,4 +629,137 @@ public abstract class ServiceClient {
      */
     public abstract void deleteTranslationConfig(String sourceLanguage, String targetLanguage)
            throws ServiceException;
+
+
+    //
+    // {serviceInstanceId}/v2/trs APIs
+    //
+
+    /**
+     * Returns a map containing <code>TranslationRequestData</code> indexed by translation
+     * request IDs.
+     * 
+     * @return A map containing <code>TranslationRequestData</code> indexed by translation.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract Map<String, TranslationRequestData> getTranslationRequests() throws ServiceException;
+
+    /**
+     * Returns the translation request specified by the translation request ID.
+     * 
+     * @param trId  The translation request ID.
+     * @return  The translation request data.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract TranslationRequestData getTranslationRequest(String trId)
+            throws ServiceException;
+
+    /**
+     * Creates a new translation request.
+     * 
+     * @param newTranslationRequestData The new translation request.
+     * @return  The translation request created by this operation.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract TranslationRequestData createTranslationRequest(NewTranslationRequestData newTranslationRequestData)
+            throws ServiceException;
+
+    /**
+     * Updates the translation request.
+     * 
+     * @param trId      The translation request ID.
+     * @param changeSet The change set of translation request data.
+     * @return  The translation request updated by this operation.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract TranslationRequestData updateTranslationRequest(String trId,
+            TranslationRequestDataChangeSet changeSet) throws ServiceException;
+
+    /**
+     * Deletes the translation request.
+     * 
+     * @param trId  The translation request ID.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract void deleteTranslationRequest(String trId) throws ServiceException;
+
+    /**
+     * Returns the bundle's information included in the translation request.
+     * 
+     * @param trId      The translation request ID.
+     * @param bundleId  The bundle ID.
+     * @return  The bundle's information
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract BundleData getTRBundleInfo(String trId, String bundleId)
+            throws ServiceException;
+
+    /**
+     * Returns a map containing resource string entries indexed by resource key
+     * in the bundle and the language included in the translation request.
+     * 
+     * @param trId      The translation request ID.
+     * @param bundleId  The bundle ID.
+     * @param language  The language specified by BCP 47 language tag.
+     * @return  A map containing resource string entries indexed by resource key.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract Map<String, ResourceEntryData> getTRResourceEntries(String trId, String bundleId,
+            String language) throws ServiceException;
+
+    /**
+     * Returns the resource entry specified by the bundle ID, the language and the resource key
+     * included in the translation request.
+     * 
+     * @param trId      The translation request ID.
+     * @param bundleId  The bundle ID.
+     * @param language  The language specified by BCP 47 language tag.
+     * @param resKey    The resource key.
+     * @return  The resource entry data.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract ResourceEntryData getTRResourceEntry(String trId, String bundleId, String language,
+            String resKey) throws ServiceException;
+
+    //
+    // {serviceInstanceId}/v2/xliff APIs
+    //
+
+    /**
+     * Returns bundle contents for the specified source-target language pair in XLIFF 2.0
+     * format.
+     * 
+     * @param srcLanguage   The source language specified by BCP 47 language tag.
+     * @param trgLanguage   The target language specified by BCP 47 language tag.
+     * @param bundleIds     The set of bundle IDs, or null for all bundles.
+     * @param outputXliff   The output XLIFF stream.
+     * @throws ServiceException when the operation failed.
+     * @throws IOException      when writing XLIFF data to the output stream failed.
+     */
+    public abstract void getXliffFromBundles(String srcLanguage, String trgLanguage, Set<String> bundleIds,
+            OutputStream outputXliff) throws ServiceException, IOException;
+
+    /**
+     * Updates bundle contents with the input XLIFF 2.0 stream. The input XLIFF must contains
+     * resource entries for a pair of source language and target language.
+     * 
+     * @param inputXliff    The input XLIFF stream.
+     * @throws ServiceException when the operation failed.
+     * @throws IOException      when reading XLIFF data from the input stream failed.
+     */
+    public abstract void updateBundlesWithXliff(InputStream inputXliff) throws ServiceException, IOException;
+
+    /**
+     * Returns bundle contents for the specified source-target language pair in XLIFF 2.0
+     * format included in the translation request.
+     * 
+     * @param trId          The translation request ID.
+     * @param srcLanguage   The source language specified by BCP 47 language tag.
+     * @param trgLanguage   The target language specified by BCP 47 language tag.
+     * @param outputXliff   The output XLIFF stream.
+     * @throws ServiceException when the operation failed.
+     * @throws IOException      when writing XLIFF data to the output stream failed.
+     */
+    public abstract void getXliffFromTranslationRequest(String trId, String srcLanguage,
+            String trgLanguage, OutputStream outputXliff) throws ServiceException, IOException;
 }

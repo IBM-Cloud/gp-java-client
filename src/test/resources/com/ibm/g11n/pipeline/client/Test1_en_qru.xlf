@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:2.0" version="2.0" srcLang="en" trgLang="qru">
+<file id="junit-bundle-xliff-test1">
+<unit id="menu.help">
+<segment state="reviewed">
+<source>Help</source>
+<target>HelpQRU</target>
+</segment>
+</unit>
+</file>
+</xliff>

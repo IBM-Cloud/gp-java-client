@@ -119,6 +119,12 @@ public class CloudResourceBundleControlTest extends AbstractServiceClientTest {
         for (TestBundle bundle : TEST_BUNDLES) {
             bundle.create(client);
         }
+
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            System.err.println("Interrupted - createTestBundles()");
+        }
         initialized = true;
     }
 
