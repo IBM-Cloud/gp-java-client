@@ -171,7 +171,7 @@ public class NewTranslationRequestData {
     }
 
     /**
-     * Sets a set of the industry domains representing the contents.
+     * Sets a set of the industry domains representing the contents. Optional.
      * @param domains   A set of the industry domains representing the contents.
      * @return  This object.
      */
@@ -181,7 +181,7 @@ public class NewTranslationRequestData {
     }
 
     /**
-     * Returns a set of the industry domains representing the contents. Optional.
+     * Returns a set of the industry domains representing the contents.
      * 
      * @return  A set of industry domains representing the contents.
      */
