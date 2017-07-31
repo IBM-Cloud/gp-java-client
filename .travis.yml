@@ -1,0 +1,13 @@
+language: java
+
+sudo: required
+
+jdk:
+  - oraclejdk8
+
+after_success:
+  - mvn clean cobertura:cobertura org.eluder.coveralls:coveralls-maven-plugin:report
+
+cache:
+  directories:
+  - $HOME/.m2
