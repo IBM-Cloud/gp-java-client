@@ -15,16 +15,17 @@
  */
 package com.ibm.g11n.pipeline.client.impl;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.StringReader;
-import java.io.StringWriter;
+import java.io.OutputStream;
+import java.io.Reader;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
@@ -61,6 +62,7 @@ import com.ibm.g11n.pipeline.client.MTServiceBindingData;
 import com.ibm.g11n.pipeline.client.NewBundleData;
 import com.ibm.g11n.pipeline.client.NewResourceEntryData;
 import com.ibm.g11n.pipeline.client.NewTranslationConfigData;
+import com.ibm.g11n.pipeline.client.NewTranslationRequestData;
 import com.ibm.g11n.pipeline.client.NewUserData;
 import com.ibm.g11n.pipeline.client.ResourceEntryData;
 import com.ibm.g11n.pipeline.client.ResourceEntryDataChangeSet;
@@ -71,6 +73,8 @@ import com.ibm.g11n.pipeline.client.ServiceException;
 import com.ibm.g11n.pipeline.client.ServiceInfo;
 import com.ibm.g11n.pipeline.client.ServiceInstanceInfo;
 import com.ibm.g11n.pipeline.client.TranslationConfigData;
+import com.ibm.g11n.pipeline.client.TranslationRequestData;
+import com.ibm.g11n.pipeline.client.TranslationRequestDataChangeSet;
 import com.ibm.g11n.pipeline.client.TranslationStatus;
 import com.ibm.g11n.pipeline.client.UserData;
 import com.ibm.g11n.pipeline.client.UserDataChangeSet;
@@ -81,6 +85,8 @@ import com.ibm.g11n.pipeline.client.impl.ServiceInfoImpl.ExternalServiceInfoImpl
 import com.ibm.g11n.pipeline.client.impl.ServiceInstanceInfoImpl.RestServiceInstanceInfo;
 import com.ibm.g11n.pipeline.client.impl.ServiceResponse.Status;
 import com.ibm.g11n.pipeline.client.impl.TranslationConfigDataImpl.RestTranslationConfigData;
+import com.ibm.g11n.pipeline.client.impl.TranslationRequestDataImpl.RestInputTranslationRequestData;
+import com.ibm.g11n.pipeline.client.impl.TranslationRequestDataImpl.RestTranslationRequest;
 import com.ibm.g11n.pipeline.client.impl.UserDataImpl.RestUser;
 
 /**
@@ -105,7 +111,7 @@ public class ServiceClientImpl extends ServiceClient {
 
     @Override
     public ServiceInfo getServiceInfo() throws ServiceException {
-        GetServiceInfoResponse resp = invokeApi(
+        GetServiceInfoResponse resp = invokeApiJson(
                 "GET",
                 "$service/v2/info",
                 null,
@@ -129,7 +135,7 @@ public class ServiceClientImpl extends ServiceClient {
 
     @Override
     public ServiceInstanceInfo getServiceInstanceInfo() throws ServiceException {
-        GetServiceInstanceInfoResponse resp = invokeApi(
+        GetServiceInstanceInfoResponse resp = invokeApiJson(
                 "GET",
                 escapePathSegment(account.getInstanceId()) + "/v2/instance/info",
                 null,
@@ -152,7 +158,7 @@ public class ServiceClientImpl extends ServiceClient {
 
     @Override
     public Set<String> getBundleIds() throws ServiceException {
-        GetBundleListResponse resp = invokeApi(
+        GetBundleListResponse resp = invokeApiJson(
                 "GET",
                 escapePathSegment(account.getInstanceId()) + "/v2/bundles",
                 null,
@@ -177,7 +183,7 @@ public class ServiceClientImpl extends ServiceClient {
 
         Gson gson = createGson(NewBundleData.class.getName());
         String jsonBody = gson.toJson(newBundleData, NewBundleData.class);
-        ServiceResponse resp = invokeApi(
+        ServiceResponse resp = invokeApiJson(
                 "PUT",
                 escapePathSegment(account.getInstanceId()) + "/v2/bundles/"
                     + escapePathSegment(bundleId),
@@ -199,7 +205,7 @@ public class ServiceClientImpl extends ServiceClient {
             throw new IllegalArgumentException("bundleId must be specified.");
         }
 
-        GetBundleInfoResponse resp = invokeApi(
+        GetBundleInfoResponse resp = invokeApiJson(
                 "GET",
                 escapePathSegment(account.getInstanceId()) + "/v2/bundles/"
                     + escapePathSegment(bundleId),
@@ -225,7 +231,7 @@ public class ServiceClientImpl extends ServiceClient {
             throw new IllegalArgumentException("bundleId must be specified.");
         }
 
-        GetBundleMetricsResponse resp = invokeApi(
+        GetBundleMetricsResponse resp = invokeApiJson(
                 "GET",
                 escapePathSegment(account.getInstanceId()) + "/v2/bundles/"
                     + escapePathSegment(bundleId)
@@ -255,7 +261,7 @@ public class ServiceClientImpl extends ServiceClient {
 
         Gson gson = createGson(BundleDataChangeSet.class.getName());
         String jsonBody = gson.toJson(changeSet, BundleDataChangeSet.class);
-        ServiceResponse resp = invokeApi(
+        ServiceResponse resp = invokeApiJson(
                 "POST",
                 escapePathSegment(account.getInstanceId()) + "/v2/bundles/"
                     + escapePathSegment(bundleId),
@@ -273,7 +279,7 @@ public class ServiceClientImpl extends ServiceClient {
             throw new IllegalArgumentException("bundleId must be specified.");
         }
 
-        GetBundleInfoResponse resp = invokeApi(
+        GetBundleInfoResponse resp = invokeApiJson(
                 "DELETE",
                 escapePathSegment(account.getInstanceId()) + "/v2/bundles/"
                     + escapePathSegment(bundleId),
@@ -310,7 +316,7 @@ public class ServiceClientImpl extends ServiceClient {
             endpoint.append("?fallback=true");
         }
 
-        GetResourceStringsResponse resp = invokeApi(
+        GetResourceStringsResponse resp = invokeApiJson(
                 "GET",
                 endpoint.toString(),
                 null,
@@ -337,7 +343,7 @@ public class ServiceClientImpl extends ServiceClient {
             throw new IllegalArgumentException("language must be specified.");
         }
 
-        GetResourceEntriesResponse resp = invokeApi(
+        GetResourceEntriesResponse resp = invokeApiJson(
                 "GET",
                 escapePathSegment(account.getInstanceId()) + "/v2/bundles/"
                     + escapePathSegment(bundleId) + "/" + language
@@ -375,7 +381,7 @@ public class ServiceClientImpl extends ServiceClient {
             throw new IllegalArgumentException("language must be specified.");
         }
 
-        GetLanguageMetricsResponse resp = invokeApi(
+        GetLanguageMetricsResponse resp = invokeApiJson(
                 "GET",
                 escapePathSegment(account.getInstanceId()) + "/v2/bundles/"
                     + escapePathSegment(bundleId) + "/" + language
@@ -428,7 +434,7 @@ public class ServiceClientImpl extends ServiceClient {
 
         Gson gson = createGson(Map.class.getName());
         String jsonBody = gson.toJson(newResourceEntries, Map.class);
-        ServiceResponse resp = invokeApi(
+        ServiceResponse resp = invokeApiJson(
                 "PUT",
                 escapePathSegment(account.getInstanceId()) + "/v2/bundles/"
                     + escapePathSegment(bundleId) + "/" + language,
@@ -485,7 +491,7 @@ public class ServiceClientImpl extends ServiceClient {
             jsonBody = gson.toJson(resourceEntries, Map.class);
         }
 
-        ServiceResponse resp = invokeApi(
+        ServiceResponse resp = invokeApiJson(
                 "POST",
                 escapePathSegment(account.getInstanceId()) + "/v2/bundles/"
                     + escapePathSegment(bundleId) + "/" + language,
@@ -514,7 +520,7 @@ public class ServiceClientImpl extends ServiceClient {
             throw new IllegalArgumentException("resKey must be specified.");
         }
 
-        GetResourceEntryResponse resp = invokeApi(
+        GetResourceEntryResponse resp = invokeApiJson(
                 "GET",
                 escapePathSegment(account.getInstanceId()) + "/v2/bundles/"
                     + escapePathSegment(bundleId) + "/" + language
@@ -548,7 +554,7 @@ public class ServiceClientImpl extends ServiceClient {
 
         Gson gson = createGson(ResourceEntryDataChangeSet.class.getName());
         String jsonBody = gson.toJson(changeSet, ResourceEntryDataChangeSet.class);
-        ServiceResponse resp = invokeApi(
+        ServiceResponse resp = invokeApiJson(
                 "POST",
                 escapePathSegment(account.getInstanceId()) + "/v2/bundles/"
                     + escapePathSegment(bundleId) + "/" + language
@@ -571,7 +577,7 @@ public class ServiceClientImpl extends ServiceClient {
 
     @Override
     public Map<String, UserData> getUsers() throws ServiceException {
-        GetUsersResponse resp = invokeApi(
+        GetUsersResponse resp = invokeApiJson(
                 "GET",
                 escapePathSegment(account.getInstanceId()) + "/v2/users",
                 null,
@@ -606,7 +612,7 @@ public class ServiceClientImpl extends ServiceClient {
 
         Gson gson = createGson(NewUserData.class.getName());
         String jsonBody = gson.toJson(newUserData, NewUserData.class);
-        UserResponse resp = invokeApi(
+        UserResponse resp = invokeApiJson(
                 "POST",
                 escapePathSegment(account.getInstanceId()) + "/v2/users/new",
                 jsonBody,
@@ -625,7 +631,7 @@ public class ServiceClientImpl extends ServiceClient {
             throw new IllegalArgumentException("userId must be specified.");
         }
 
-        UserResponse resp = invokeApi(
+        UserResponse resp = invokeApiJson(
                 "GET",
                 escapePathSegment(account.getInstanceId()) + "/v2/users/"
                     + escapePathSegment(userId),
@@ -666,7 +672,7 @@ public class ServiceClientImpl extends ServiceClient {
             jsonBody = gson.toJson(changeSet, UserDataChangeSet.class);
         }
 
-        UserResponse resp = invokeApi(
+        UserResponse resp = invokeApiJson(
                 "POST",
                 endpoint.toString(),
                 jsonBody,
@@ -685,7 +691,7 @@ public class ServiceClientImpl extends ServiceClient {
             throw new IllegalArgumentException("userId must be specified.");
         }
 
-        ServiceResponse resp = invokeApi(
+        ServiceResponse resp = invokeApiJson(
                 "DELETE",
                 escapePathSegment(account.getInstanceId()) + "/v2/users/"
                     + escapePathSegment(userId),
@@ -708,7 +714,7 @@ public class ServiceClientImpl extends ServiceClient {
 
     @Override
     public Map<String, MTServiceBindingData> getAllMTServiceBindings() throws ServiceException {
-        MTBindingsResponse resp = invokeApi(
+        MTBindingsResponse resp = invokeApiJson(
                 "GET",
                 escapePathSegment(account.getInstanceId()) + "/v2/config/mt",
                 null,
@@ -732,7 +738,7 @@ public class ServiceClientImpl extends ServiceClient {
     @Override
     public Map<String, Map<String, Set<String>>> getAvailableMTLanguages()
             throws ServiceException {
-        AvailableMTLanguagesResponse resp = invokeApi(
+        AvailableMTLanguagesResponse resp = invokeApiJson(
                 "GET",
                 escapePathSegment(account.getInstanceId()) + "/v2/config/mt",
                 null,
@@ -752,7 +758,7 @@ public class ServiceClientImpl extends ServiceClient {
     @Override
     public MTServiceBindingData getMTServiceBinding(String mtServiceInstanceId)
             throws ServiceException {
-        GetMTServiceBindingResponse resp = invokeApi(
+        GetMTServiceBindingResponse resp = invokeApiJson(
                 "GET",
                 escapePathSegment(account.getInstanceId()) + "/v2/config/mt/"
                     + escapePathSegment(mtServiceInstanceId),
@@ -773,7 +779,7 @@ public class ServiceClientImpl extends ServiceClient {
     @Override
     public Map<String, Map<String, NewTranslationConfigData>> getAllTranslationConfigs()
             throws ServiceException {
-        TranslationConfigsResponse resp = invokeApi(
+        TranslationConfigsResponse resp = invokeApiJson(
                 "GET",
                 escapePathSegment(account.getInstanceId()) + "/v2/config/trans",
                 null,
@@ -793,7 +799,7 @@ public class ServiceClientImpl extends ServiceClient {
     @Override
     public Map<String, Set<String>> getConfiguredMTLanguages()
             throws ServiceException {
-        ConfiguredMTLanguagesResponse resp = invokeApi(
+        ConfiguredMTLanguagesResponse resp = invokeApiJson(
                 "GET",
                 escapePathSegment(account.getInstanceId()) + "/v2/config/trans",
                 null,
@@ -816,7 +822,7 @@ public class ServiceClientImpl extends ServiceClient {
         Gson gson = createGson(NewTranslationConfigData.class.getName());
         String jsonBody = gson.toJson(configData, NewTranslationConfigData.class);
 
-        ServiceResponse resp = invokeApi(
+        ServiceResponse resp = invokeApiJson(
                 "PUT",
                 escapePathSegment(account.getInstanceId()) + "/v2/config/trans/"
                     + sourceLanguage + "/" + targetLanguage,
@@ -835,7 +841,7 @@ public class ServiceClientImpl extends ServiceClient {
     @Override
     public TranslationConfigData getTranslationConfig(String sourceLanguage,
             String targetLanguage) throws ServiceException {
-        TranslationConfigResponse resp = invokeApi(
+        TranslationConfigResponse resp = invokeApiJson(
                 "GET",
                 escapePathSegment(account.getInstanceId()) + "/v2/config/trans/"
                     + sourceLanguage + "/" + targetLanguage,
@@ -853,7 +859,7 @@ public class ServiceClientImpl extends ServiceClient {
     @Override
     public void deleteTranslationConfig(String sourceLanguage,
             String targetLanguage) throws ServiceException {
-        ServiceResponse resp = invokeApi(
+        ServiceResponse resp = invokeApiJson(
                 "DELETE",
                 escapePathSegment(account.getInstanceId()) + "/v2/config/trans/"
                     + sourceLanguage + "/" + targetLanguage,
@@ -865,102 +871,389 @@ public class ServiceClientImpl extends ServiceClient {
         }
     }
 
+
+    //
+    // Translation Request APIs
+    //
+
+    private static class GetTranslationRequestsResponse extends ServiceResponse {
+        Map<String, RestTranslationRequest> translationRequests;
+    }
+
+    @Override
+    public Map<String, TranslationRequestData> getTranslationRequests()
+            throws ServiceException {
+        GetTranslationRequestsResponse resp = invokeApiJson(
+                "GET",
+                escapePathSegment(account.getInstanceId()) + "/v2/trs",
+                null,
+                GetTranslationRequestsResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+
+        Map<String, TranslationRequestData> resultTRs = new TreeMap<>();
+        for (Entry<String, RestTranslationRequest> trEntry : resp.translationRequests.entrySet()) {
+            String id = trEntry.getKey();
+            RestTranslationRequest tr = trEntry.getValue();
+            resultTRs.put(id, new TranslationRequestDataImpl(id, tr));
+        }
+
+        return resultTRs;
+    }
+
+
+    private static class TranslationRequestResponse extends ServiceResponse {
+        String id;
+        RestTranslationRequest translationRequest;
+    }
+
+    @Override
+    public TranslationRequestData getTranslationRequest(
+            String trId) throws ServiceException {
+        if (trId == null || trId.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty trId must be specified.");
+        }
+
+        TranslationRequestResponse resp = invokeApiJson(
+                "GET",
+                escapePathSegment(account.getInstanceId()) + "/v2/trs/"
+                    + escapePathSegment(trId),
+                null,
+                TranslationRequestResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+
+        return new TranslationRequestDataImpl(resp.id, resp.translationRequest);
+    }
+
+    @Override
+    public TranslationRequestData createTranslationRequest(
+            NewTranslationRequestData newTranslationRequestData)
+            throws ServiceException {
+        if (newTranslationRequestData == null) {
+            throw new IllegalArgumentException("Non-empty newTranslationRequestData must be specified.");
+        }
+
+        RestInputTranslationRequestData newRestTRData = new RestInputTranslationRequestData(newTranslationRequestData);
+        Gson gson = createGson(RestInputTranslationRequestData.class.getName());
+        String jsonBody = gson.toJson(newRestTRData, RestInputTranslationRequestData.class);
+        TranslationRequestResponse resp = invokeApiJson(
+                "POST",
+                escapePathSegment(account.getInstanceId()) + "/v2/trs/new",
+                jsonBody,
+                TranslationRequestResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+
+        return new TranslationRequestDataImpl(resp.id, resp.translationRequest);
+    }
+
+
+    @Override
+    public TranslationRequestData updateTranslationRequest(
+            String trId,
+            TranslationRequestDataChangeSet changeSet) throws ServiceException {
+        if (trId == null || trId.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty trId must be specified.");
+        }
+        if (changeSet == null) {
+            throw new IllegalArgumentException("Non-null changeSet must be specified.");
+        }
+
+        RestInputTranslationRequestData restChangeSet = new RestInputTranslationRequestData(changeSet);
+        Gson gson = createGson(RestInputTranslationRequestData.class.getName());
+        String jsonBody = gson.toJson(restChangeSet, RestInputTranslationRequestData.class);
+        TranslationRequestResponse resp = invokeApiJson(
+                "POST",
+                escapePathSegment(account.getInstanceId()) + "/v2/trs/"
+                        + escapePathSegment(trId),
+                jsonBody,
+                TranslationRequestResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+
+        return new TranslationRequestDataImpl(resp.id, resp.translationRequest);
+    }
+
+
+    @Override
+    public void deleteTranslationRequest(String trId)
+            throws ServiceException {
+        ServiceResponse resp = invokeApiJson(
+                "DELETE",
+                escapePathSegment(account.getInstanceId()) + "/v2/trs/"
+                    + trId,
+                null,
+                ServiceResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+    }
+
+
+    @Override
+    public BundleData getTRBundleInfo(String trId,
+            String bundleId) throws ServiceException {
+        if (trId == null || trId.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty trId must be specified.");
+        }
+        if (bundleId == null || bundleId.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty bundleId must be specified.");
+        }
+
+        GetBundleInfoResponse resp = invokeApiJson(
+                "GET",
+                escapePathSegment(account.getInstanceId()) + "/v2/trs/"
+                    + escapePathSegment(trId) + "/" + escapePathSegment(bundleId),
+                null,
+                GetBundleInfoResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+
+        return new BundleDataImpl(resp.bundle);
+    }
+
+    @Override
+    public Map<String, ResourceEntryData> getTRResourceEntries(
+            String trId, String bundleId, String language)
+            throws ServiceException {
+        if (trId == null || trId.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty trId must be specified.");
+        }
+        if (bundleId == null || bundleId.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty bundleId must be specified.");
+        }
+        if (language == null || language.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty languageId must be specified.");
+        }
+
+        GetResourceEntriesResponse resp = invokeApiJson(
+                "GET",
+                escapePathSegment(account.getInstanceId()) + "/v2/trs/"
+                    + escapePathSegment(trId) + "/"
+                    + escapePathSegment(bundleId) + "/" + language,
+                null,
+                GetResourceEntriesResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+
+        Map<String, ResourceEntryData> resultEntries = new TreeMap<String, ResourceEntryData>();
+        if (resp.resourceEntries != null && !resp.resourceEntries.isEmpty()) {
+            for (Entry<String, RestResourceEntry> entry : resp.resourceEntries.entrySet()) {
+                resultEntries.put(entry.getKey(),
+                        new ResourceEntryDataImpl(entry.getValue()));
+            }
+        }
+        return resultEntries;
+    }
+
+
+    @Override
+    public ResourceEntryData getTRResourceEntry(String trId,
+            String bundleId, String language, String resKey)
+            throws ServiceException {
+        if (trId == null || trId.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty trId must be specified.");
+        }
+        if (bundleId == null || bundleId.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty bundleId must be specified.");
+        }
+        if (language == null || language.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty language must be specified.");
+        }
+        if (resKey == null || resKey.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty resKey must be specified.");
+        }
+
+        GetResourceEntryResponse resp = invokeApiJson(
+                "GET",
+                escapePathSegment(account.getInstanceId()) + "/v2/bundles/"
+                    + escapePathSegment(bundleId) + "/" + language
+                    + "/" + escapePathSegment(resKey),
+                null,
+                GetResourceEntryResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+
+        return new ResourceEntryDataImpl(resp.resourceEntry);
+    }
+
+
+    //
+    // XLIFF APIs
+    //
+
+    @Override
+    public void getXliffFromBundles(String srcLanguage,
+            String trgLanguage, Set<String> bundleIds,
+            OutputStream outputXliff) throws ServiceException, IOException {
+        if (srcLanguage == null || srcLanguage.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty srcLanguage must be specified.");
+        }
+        if (trgLanguage == null || trgLanguage.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty trgLanguage must be specified.");
+        }
+
+        StringBuilder urlBuf = new StringBuilder();
+        urlBuf
+            .append(escapePathSegment(account.getInstanceId()))
+            .append("/v2/xliff/bundles/")
+            .append(srcLanguage)
+            .append("/")
+            .append(trgLanguage);
+
+        if (bundleIds != null && !bundleIds.isEmpty()) {
+            urlBuf.append("?bundles=");
+            boolean first = true;
+            for (String bundleId : bundleIds) {
+                if (first) {
+                    first = false;
+                } else {
+                    urlBuf.append(",");
+                }
+                urlBuf.append(bundleId);
+            }
+        }
+
+        ApiResponse resp = null;
+        try {
+            resp = invokeApi("GET", urlBuf.toString(), null, null, false);
+        } catch (Exception e) {
+            String errMsg = "Error while processing API request GET " + urlBuf;
+            throw new ServiceException(errMsg, e);
+        }
+        assert resp != null;
+
+        if (resp.contentType == null || !resp.contentType.equalsIgnoreCase("application/xliff+xml")) {
+            throw new ServiceException("Received HTTP status: " + resp.status
+                    + " with non-XLIFF response (" + resp.contentType + ") from GET"
+                    + " " + urlBuf.toString());
+        }
+        assert resp.body != null;
+        outputXliff.write(resp.body);
+    }
+
+
+    @Override
+    public void updateBundlesWithXliff(InputStream inputXliff)
+            throws ServiceException, IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] buf = new byte[2048];
+        int bytes;
+        while ((bytes = inputXliff.read(buf)) != -1) {
+            baos.write(buf, 0, bytes);
+        }
+        byte[] inputXliffBytes = baos.toByteArray();
+
+        String method = "POST";
+        String apiPath = escapePathSegment(account.getInstanceId())
+                + "/v2/xliff/bundles";
+
+        ApiResponse resp = null;
+        try {
+            resp = invokeApi(method, apiPath, "application/xliff+xml", inputXliffBytes, false);
+        } catch (Exception e) {
+            String errMsg = "Error while processing API request " + method + " " + apiPath;
+            throw new ServiceException(errMsg, e);
+        }
+        if (resp.status >= 300) {
+            String bodyStr = resp.body != null ? new String(resp.body, StandardCharsets.UTF_8) : null;
+            throw new ServiceException("Received HTTP status: " + resp.status + " from " + method
+                    + " " + apiPath + ", body: " + bodyStr);
+        }
+    }
+
+
+    @Override
+    public void getXliffFromTranslationRequest(String trId,
+            String srcLanguage, String trgLanguage,
+            OutputStream outputXliff) throws ServiceException, IOException {
+        if (trId == null || trId.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty trId must be specified.");
+        }
+        if (srcLanguage == null || srcLanguage.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty srcLanguage must be specified.");
+        }
+        if (trgLanguage == null || trgLanguage.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty trgLanguage must be specified.");
+        }
+
+        StringBuilder urlBuf = new StringBuilder();
+        urlBuf
+            .append(escapePathSegment(account.getInstanceId()))
+            .append("/v2/xliff/trs/")
+            .append(trId)
+            .append("/")
+            .append(srcLanguage)
+            .append("/")
+            .append(trgLanguage);
+
+        ApiResponse resp = null;
+        try {
+            resp = invokeApi("GET", urlBuf.toString(), null, null, false);
+        } catch (Exception e) {
+            String errMsg = "Error while processing API request GET " + urlBuf;
+            throw new ServiceException(errMsg, e);
+        }
+        assert resp != null;
+
+        if (resp.contentType == null || !resp.contentType.equalsIgnoreCase("application/xliff+xml")) {
+            throw new ServiceException("Received HTTP status: " + resp.status
+                    + " with non-XLIFF response (" + resp.contentType + ") from GET"
+                    + " " + urlBuf.toString());
+        }
+        assert resp.body != null;
+        outputXliff.write(resp.body);
+    }
+
+
     //
     // Private method used for calling REST endpoints
     //
 
-    private <T> T invokeApi(String method, String apiPath, String inJson, Class<T> classOfT)
+    private <T> T invokeApiJson(String method, String apiPath, String inJson, Class<T> classOfT)
         throws ServiceException {
-        return invokeApi(method, apiPath, inJson, classOfT, false);
+        return invokeApiJson(method, apiPath, inJson, classOfT, false);
     }
 
-    private <T> T invokeApi(String method, String apiPath, String inJson, Class<T> classOfT,
+    private <T> T invokeApiJson(String method, String apiPath, String inJson, Class<T> classOfT,
             boolean anonymous) throws ServiceException {
 
         T responseObj = null;
-
-        try (StringWriter out = new StringWriter()
-        ) {
-            String urlStr = account.getUrl() + "/" + apiPath;
-            URL targetUrl = new URL(urlStr);
-            HttpURLConnection conn = (HttpURLConnection)targetUrl.openConnection();
-            conn.setRequestMethod(method);
-            conn.setRequestProperty("Accept", "application/json");
-
-            // Date header
-            SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
-            sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
-            String dateHeader = sdf.format(new Date());
-
-            conn.setRequestProperty("Date", dateHeader);
-
+        try {
             // Request body in UTF-8
+            String contentType = null;
             byte[] requestBody = null;
             if (inJson != null) {
-                requestBody = inJson.getBytes("UTF-8");
+                requestBody = inJson.getBytes(StandardCharsets.UTF_8);
+                contentType = "application/json";
             }
 
-            // Authorization header
-            if (!anonymous) {
-                StringBuilder authHeader = new StringBuilder();
-                String uid = account.getUserId();
-                String secret = account.getPassword();
+            ApiResponse resp = invokeApi(method, apiPath, contentType, requestBody, anonymous);
 
-                switch (scheme) {
-                case BASIC:
-                    authHeader.append("Basic ");
-                    authHeader.append(getBasicCredential(uid, secret));
-                    break;
-
-                case HMAC:
-                    authHeader.append("GaaS-HMAC ");
-                    authHeader.append(
-                            getHmacCredential(uid, secret,
-                                    method, urlStr, dateHeader, requestBody));
-                    break;
-                }
-
-                conn.setRequestProperty("Authorization", authHeader.toString());
+            if (resp.contentType == null || !resp.contentType.equalsIgnoreCase("application/json")) {
+                throw new ServiceException("Received HTTP status: " + resp.status
+                        + " with non-JSON response from " + method + " " + apiPath);
             }
 
-            // write the JSON body
-            if (requestBody != null) {
-                conn.setRequestProperty("Content-Type", "application/json");
-                conn.setDoOutput(true);
-                conn.getOutputStream().write(requestBody);
-            }
-
-            // receiving response
-
-            int httpStatus = conn.getResponseCode();
-
-            String ctype = conn.getContentType();
-            if (ctype == null || !ctype.equalsIgnoreCase("application/json")) {
-                throw new ServiceException("Received HTTP status: " + httpStatus
-                        + " with non-JSON response from " + method + " " + urlStr);
-            } else {
-                InputStream is = conn.getErrorStream();
-                if (is == null) {
-                    is = conn.getInputStream();
-                }
-
-                try (BufferedReader br =
-                        new BufferedReader(new InputStreamReader(is, "UTF-8"))
-                ) {
-                    char[] buf = new char[1024];
-                    int numChars;
-
-                    while ((numChars = br.read(buf)) != -1) {
-                        out.write(buf, 0, numChars);
-                    }
-                }
-            }
-
-            out.flush();
-            String strResponse = out.toString();
-            StringReader resReader = new StringReader(strResponse);
+            Reader reader = new InputStreamReader(new ByteArrayInputStream(resp.body), StandardCharsets.UTF_8);
             Gson gson = createGson(classOfT.getName());
-            responseObj = gson.fromJson(resReader, classOfT);
+            responseObj = gson.fromJson(reader, classOfT);
 
         } catch (Exception e) {
             // Error handling
@@ -971,6 +1264,84 @@ public class ServiceClientImpl extends ServiceClient {
         return responseObj;
     }
 
+    private static class ApiResponse {
+        int status;
+        String contentType;
+        byte[] body;
+    }
+
+    private ApiResponse invokeApi(String method, String apiPath, String inContentType, byte[] inBody,
+            boolean anonymous) throws IOException {
+        String urlStr = account.getUrl() + "/" + apiPath;
+        URL targetUrl = new URL(urlStr);
+        HttpURLConnection conn = (HttpURLConnection)targetUrl.openConnection();
+        conn.setRequestMethod(method);
+
+        // Date header
+        SimpleDateFormat sdf = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
+        sdf.setTimeZone(TimeZone.getTimeZone("GMT"));
+        String dateHeader = sdf.format(new Date());
+
+        conn.setRequestProperty("Date", dateHeader);
+
+        // Authorization header
+        if (!anonymous) {
+            StringBuilder authHeader = new StringBuilder();
+            String uid = account.getUserId();
+            String secret = account.getPassword();
+
+            switch (scheme) {
+            case BASIC:
+                authHeader.append("Basic ");
+                authHeader.append(getBasicCredential(uid, secret));
+                break;
+
+            case HMAC:
+                authHeader.append("GaaS-HMAC ");
+                authHeader.append(
+                        getHmacCredential(uid, secret,
+                                method, urlStr, dateHeader, inBody));
+                break;
+            }
+
+            conn.setRequestProperty("Authorization", authHeader.toString());
+        }
+
+        // write the request body
+        if (inBody != null) {
+            conn.setRequestProperty("Content-Type", inContentType);
+            conn.setDoOutput(true);
+            conn.getOutputStream().write(inBody);
+        }
+
+        // receiving response
+        ApiResponse resp = new ApiResponse();
+
+        resp.status = conn.getResponseCode();
+        resp.contentType = conn.getContentType();
+
+        // response body
+        int bodyLen = conn.getContentLength();
+        if (bodyLen < 0) {
+            bodyLen = 2048; // default length for initial byte array
+        }
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream(bodyLen);
+        InputStream is = conn.getErrorStream();
+        if (is == null) {
+            is = conn.getInputStream();
+        }
+
+        byte[] buf = new byte[2048];
+        int bytes;
+        while ((bytes = is.read(buf)) != -1) {
+            baos.write(buf, 0, bytes);
+        }
+
+        resp.body = baos.toByteArray();
+
+        return resp;
+    }
 
     private static final char SEP = ':';
 

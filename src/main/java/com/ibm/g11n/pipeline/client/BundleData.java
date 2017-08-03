@@ -81,7 +81,7 @@ public abstract class BundleData {
      * @return The last date when this bundle's properties were updated.
      */
     public final Date getUpdatedAt() {
-        return updatedAt;
+        return (Date)updatedAt.clone();
     }
 
     /**

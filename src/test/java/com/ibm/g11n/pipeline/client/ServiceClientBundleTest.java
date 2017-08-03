@@ -22,6 +22,10 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
@@ -36,7 +40,6 @@ import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -46,30 +49,22 @@ import org.junit.rules.ExpectedException;
  * 
  * @author Yoshito Umaoka
  */
-public class ServiceClientBundleTest extends AbstractServiceClientTest {
+public class ServiceClientBundleTest extends AbstractServiceClientBundleTest {
 
-    private static final String BUNDLE_PREFIX = "junit-bundle-";
     private static final String DUMMY_FAIL_LANG = "zxx";
     private static final String TRANSLIT_LANG = "qru";
 
-    private static int WAIT_TIME = 200; // 100ms
-    private static int WAIT_TIME_LONG = 1000; // 1 sec
-
-    @Rule
-    public ExpectedException expectedException = ExpectedException.none();
+    private static int WAIT_TIME = 500; // 500ms
+    private static int WAIT_TIME_LONG = 5000; // 5 sec
 
     @Before
     @After
     public void cleanupBundles() throws ServiceException {
-        if (client != null) {
-            Set<String> bundleIds = client.getBundleIds();
-            for (String bundleId : bundleIds) {
-                if (isTestBundleId(bundleId)) {
-                    client.deleteBundle(bundleId);
-                }
-            }
-        }
+        super.cleanupBundles();
     }
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
 
     //
     // getServiceInfo
@@ -269,7 +264,6 @@ public class ServiceClientBundleTest extends AbstractServiceClientTest {
         checkBundleMetrics(bundleMetrics, source, targets, strings.size());
     }
 
-    @Ignore // TODO: service issue ?
     @Test
     public void getBundleMetrics_Empty_MetricsShouldBeEmpty()
             throws ServiceException {
@@ -716,7 +710,7 @@ public class ServiceClientBundleTest extends AbstractServiceClientTest {
         int numResources = strings.size();
         client.uploadResourceStrings(bundleId, source, strings);
 
-        Thread.sleep(WAIT_TIME);
+        Thread.sleep(WAIT_TIME_LONG);
 
         // source language
         Map<String, String> resultStrings = client.getResourceStrings(bundleId,
@@ -1149,7 +1143,7 @@ public class ServiceClientBundleTest extends AbstractServiceClientTest {
                 new String[][] { { key, null } });
         client.updateResourceStrings(bundleId, source, changeStrings, false);
 
-        Thread.sleep(WAIT_TIME);
+        Thread.sleep(WAIT_TIME_LONG);
 
         // key should be deleted in the source language
         Map<String, String> sourceStrings = client.getResourceStrings(bundleId,
@@ -1293,7 +1287,7 @@ public class ServiceClientBundleTest extends AbstractServiceClientTest {
                 new String[][] { { key, null } });
         client.updateResourceEntries(bundleId, source, changeResources, false);
 
-        Thread.sleep(WAIT_TIME);
+        Thread.sleep(WAIT_TIME_LONG);
 
         // key should be deleted in the source language
         Map<String, String> sourceStrings = client.getResourceStrings(bundleId,
@@ -1351,42 +1345,88 @@ public class ServiceClientBundleTest extends AbstractServiceClientTest {
     // TODO - Add test cases
 
     //
-    // private utility methods
+    // getXliffFromBundles
     //
 
-    private static String testBundleId(String id) {
-        return BUNDLE_PREFIX + id;
-    }
+    @Test
+    public void getXliffFromBundles_coverage() throws ServiceException, InterruptedException {
+        String bundleId = testBundleId("bundle1");
+        String source = "en";
+        String target = TRANSLIT_LANG;
+        createBundleWithLanguages(bundleId, source, target);
 
-    private static boolean isTestBundleId(String bundleId) {
-        return bundleId.startsWith(BUNDLE_PREFIX);
-    }
+        Map<String, String> strings = toStringMap(TEST_RES1);
+        client.uploadResourceStrings(bundleId, source, strings);
 
-    private static void createBundleWithLanguages(String bundleId,
-            String source, String... targets) throws ServiceException {
-        Set<String> targetSet = null;
-        if (targets != null) {
-            targetSet = new HashSet<String>(Arrays.asList(targets));
+        Thread.sleep(WAIT_TIME);
+
+        ByteArrayOutputStream outputXliff = new ByteArrayOutputStream();
+        try {
+            client.getXliffFromBundles(source, target, null, outputXliff);
+
+            // Following code does not really check XLIFF structure
+            byte[] xliffBytes = outputXliff.toByteArray();
+            String xliff = new String(xliffBytes, StandardCharsets.UTF_8);
+            assertTrue("XLIFF head", xliff.startsWith("<?xml version=\"1.0\"?>\n<xliff "));
+            assertTrue("XLIFF <file>", xliff.contains("<file id=\"" + bundleId + "\">"));
+            for (String[] kv : TEST_RES1) {
+                String key = kv[0];
+                String val = kv[1];
+                assertTrue("XLIFF unit for " + key, xliff.contains("<unit id=\"" + key + "\">"));
+                assertTrue("XLIFF source for " + key, xliff.contains("<source>" + val + "</source>"));
+            }
+        } catch (IOException e) {
+            fail("IOException: " + e.getMessage());
         }
-        createBundle(bundleId, source, targetSet, null);
     }
 
-    private static void createBundleWithLanguages(String bundleId,
-            String source, Set<String> targets) throws ServiceException {
-        createBundle(bundleId, source, targets, null);
+    //
+    // updateBundlesWithXliff
+    //
+
+    @Test
+    public void updateBundlesWithXliff_coverage() throws ServiceException, InterruptedException {
+        // These values should be embedded in test .xlf files
+        String bundleId = "junit-bundle-xliff-test1";
+        String source = "en";
+        String target = TRANSLIT_LANG;
+        String key = "menu.help";
+        String srcVal = "Help";
+        String trgVal = "HelpQRU";
+
+        createBundleWithLanguages(bundleId, source, target);
+
+        // Upload source only XLIFF
+        try {
+            InputStream srcXliff = this.getClass().getResourceAsStream("Test1_en_only.xlf");
+            client.updateBundlesWithXliff(srcXliff);
+        } catch (IOException e) {
+            fail("IOException while uploading source only XLIFF: " + e.getMessage());
+        }
+
+        // Make sure source strings are properly pushed
+        ResourceEntryData srcResEntry = client.getResourceEntry(bundleId, source, key);
+        assertEquals("Source value of key:" + key, srcVal, srcResEntry.getValue());
+
+        // Update en-qru XLIFF
+        try {
+            InputStream inXliff = this.getClass().getResourceAsStream("Test1_en_qru.xlf");
+            client.updateBundlesWithXliff(inXliff);
+        } catch (IOException e) {
+            fail("IOExeption while uploading translated XLIFF: " + e.getMessage());
+        }
+
+        Thread.sleep(WAIT_TIME);
+
+        // Check if the target value was updated and marked as reviewed
+        ResourceEntryData trgResEntry = client.getResourceEntry(bundleId, target, key);
+        assertEquals("Target value of key:" + key, trgVal, trgResEntry.getValue());
+        assertTrue("Target reviewed", trgResEntry.isReviewed());
     }
 
-    private static void createBundle(String bundleId, String source,
-            Set<String> targets, List<String> notes) throws ServiceException {
-        NewBundleData newBundleData = new NewBundleData(source);
-        if (targets != null) {
-            newBundleData.setTargetLanguages(targets);
-        }
-        if (notes != null) {
-            newBundleData.setNotes(notes);
-        }
-        client.createBundle(bundleId, newBundleData);
-    }
+    //
+    // private utility methods
+    //
 
     private static Map<String, String> toStringMap(String[][] resArray) {
         Map<String, String> stringMap = new HashMap<>(resArray.length);
@@ -1508,6 +1548,13 @@ public class ServiceClientBundleTest extends AbstractServiceClientTest {
 
         Map<String, Map<String, Integer>> partnerMetricsByLang = metrics
                 .getPartnerStatusMetricsByLanguage();
+
+        if (numResources == 0) {
+            assertTrue("translation status metrics should be empty when no resources", transMetricsByLang.isEmpty());
+            assertTrue("review status metrics should be empty when no resources", reviewMetricsByLang.isEmpty());
+            assertTrue("partner status metrics should be empty when no resources", partnerMetricsByLang.isEmpty());
+            return;
+        }
 
         // source language
         EnumMap<TranslationStatus, Integer> transMetrics = transMetricsByLang

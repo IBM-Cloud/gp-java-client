@@ -44,7 +44,7 @@ import com.ibm.g11n.pipeline.client.TranslationConfigData.MTServiceData;
  * @author Yoshito Umaoka
  */
 public class ServiceClientConfigTest extends AbstractServiceClientTest {
-    private static final String WATSON_SERVICE_NAME = "language_translation";
+    private static final String WATSON_SERVICE_NAME = "language_translator";
     private static final String CAPITA_SERVICE_NAME = "$ext-capita_smartmate";
 
     private static final String BASIC_GUID = "$basic";
@@ -52,7 +52,7 @@ public class ServiceClientConfigTest extends AbstractServiceClientTest {
     private static String CAPITA_GUID = null;
 
     private static final String TEST_CONFIG_SRC = "en";
-    private static final String TEST_CONFIG_TGT = "fr";
+    private static final String TEST_CONFIG_TGT = "es";
     private static boolean TEST_CONFIG = false;
 
     static {
