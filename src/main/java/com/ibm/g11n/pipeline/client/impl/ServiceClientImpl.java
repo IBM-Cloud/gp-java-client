@@ -75,6 +75,7 @@ import com.ibm.g11n.pipeline.client.ServiceInstanceInfo;
 import com.ibm.g11n.pipeline.client.TranslationConfigData;
 import com.ibm.g11n.pipeline.client.TranslationRequestData;
 import com.ibm.g11n.pipeline.client.TranslationRequestDataChangeSet;
+import com.ibm.g11n.pipeline.client.TranslationRequestStatus;
 import com.ibm.g11n.pipeline.client.TranslationStatus;
 import com.ibm.g11n.pipeline.client.UserData;
 import com.ibm.g11n.pipeline.client.UserDataChangeSet;
@@ -1414,33 +1415,44 @@ public class ServiceClientImpl extends ServiceClient {
     }
 
     //
-    // Custom JSON deserialization code supporting Java Enum
+    // Custom JSON serialization/deserialization supporting Java Enum
     //
 
-    // Custom type adapter for TranslationStatus enum. This adapter implementation
-    // maps unknown status type to TranslationStatus.UNKNOWN. This fallback mapping
-    // allow GP REST server to introduce a new status without breaking Java SDK
-    // client code.
-    private static class TranslationStatusAdapter extends TypeAdapter<TranslationStatus> {
+    // Custom type adapter for serializing/deserializing Java enum with mapping.
+    // This method assumes all enum constants are in upper case.
+    static class EnumWithFallbackAdapter<T extends Enum<T>> extends TypeAdapter<T> {
+        private final T fallback;
+
+        public EnumWithFallbackAdapter(T fallback) {
+            this.fallback = fallback;
+        }
+
+        T toEnumWithFallback(String s) {
+            if (s == null) {
+                return null;
+            }
+
+            T value = null;
+            try {
+                value = (T) Enum.valueOf(fallback.getDeclaringClass(), s.toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException e) {
+                // fallback
+                value = fallback;
+            }
+            return value;
+        }
+
         @Override
-        public TranslationStatus read(JsonReader in) throws IOException {
+        public T read(JsonReader in) throws IOException {
             if (in.peek() == JsonToken.NULL) {
                 in.nextNull();
                 return null;
             }
-            TranslationStatus status = null;
-            String statusStr = in.nextString();
-            try {
-                status = TranslationStatus.valueOf(statusStr.toUpperCase());
-            } catch (IllegalArgumentException e) {
-                // use UNKNOWN as fallback
-                status = TranslationStatus.UNKNOWN;
-            }
-            return status;
+            return toEnumWithFallback(in.nextString());
         }
 
         @Override
-        public void write(JsonWriter out, TranslationStatus value) throws IOException {
+        public void write(JsonWriter out, T value) throws IOException {
             if (value == null) {
                 out.nullValue();
                 return;
@@ -1513,7 +1525,10 @@ public class ServiceClientImpl extends ServiceClient {
         builder.setDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSX");
 
         builder.registerTypeAdapter(TranslationStatus.class,
-                new TranslationStatusAdapter());
+                new EnumWithFallbackAdapter<TranslationStatus>(TranslationStatus.UNKNOWN));
+
+        builder.registerTypeAdapter(TranslationRequestStatus.class,
+                new EnumWithFallbackAdapter<TranslationRequestStatus>(TranslationRequestStatus.UNKNOWN));
 
         builder.registerTypeAdapter(
                 new TypeToken<EnumMap<TranslationStatus, Integer>>() {}.getType(),

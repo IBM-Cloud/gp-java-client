@@ -187,6 +187,19 @@ public abstract class TranslationRequestData {
     public abstract Map<String, String> getMetadata();
 
     /**
+     * Returns a map containing key-value pairs specifying configuration parameters
+     * passed to professional human post editing service provider.
+     * 
+     * <p>Configuration parameters may vary depending on a service provider.
+     * This field should be empty unless a service provider asks a Globalization Pipeline
+     * user to provide some translation request specific information.
+     * 
+     * @return A map containing key-value pairs specifying configuration parameters
+     * passed to professional human post editing service provider.
+     */
+    public abstract Map<String, String> getPartnerParameters();
+
+    /**
      * Returns the word count information of this translation request.
      * 
      * @return  The word count information of this translation request.

@@ -113,6 +113,15 @@ public class TranslationRequestDataImpl extends TranslationRequestData {
     }
 
     @Override
+    public Map<String, String> getPartnerParameters() {
+        Map<String, String> partnerParameters = translationRequest.getPartnerParameters();
+        if (partnerParameters == null) {
+            return null;
+        }
+        return Collections.unmodifiableMap(partnerParameters);
+    }
+
+    @Override
     public Map<String, WordCountData> getWordCountData() {
         Map<String, WordCountData> wcDataByBundle = new TreeMap<>();
         Map<String, RestWordCountData> restWcDataByBundle = translationRequest.getWordCountsByBundle();
@@ -191,6 +200,7 @@ public class TranslationRequestDataImpl extends TranslationRequestData {
         private Set<String> domains;
         private List<String> notes;
         private Map<String, String> metadata;
+        private Map<String, String> partnerParameters;
         private String status;
         private Map<String, RestWordCountData> wordCountsByBundle;
         private Date estimatedCompletion;
@@ -234,6 +244,10 @@ public class TranslationRequestDataImpl extends TranslationRequestData {
 
         public Map<String, String> getMetadata() {
             return metadata;
+        }
+
+        public Map<String, String> getPartnerParameters() {
+            return partnerParameters;
         }
 
         public String getStatus() {
@@ -303,7 +317,8 @@ public class TranslationRequestDataImpl extends TranslationRequestData {
         private Set<String> domains;
         private List<String> notes;
         private String status;
-//        private Map<String, String> metadata;
+        private Map<String, String> metadata;
+        private Map<String, String> partnerParameters;
 
         public RestInputTranslationRequestData(NewTranslationRequestData newTrData) {
             this.targetLanguagesByBundle = newTrData.getTargetLanguagesByBundle();
@@ -313,6 +328,8 @@ public class TranslationRequestDataImpl extends TranslationRequestData {
             this.emails = newTrData.getEmails();
             this.phones = newTrData.getPhones();
             this.notes = newTrData.getNotes();
+            this.metadata = newTrData.getMetadata();
+            this.partnerParameters = newTrData.getPartnerParameters();
 
             this.status = newTrData.isSubmit() ? "SUBMITTED" : "DRAFT";
 
@@ -334,6 +351,8 @@ public class TranslationRequestDataImpl extends TranslationRequestData {
             this.emails = trChangeSet.getEmails();
             this.phones = trChangeSet.getPhones();
             this.notes = trChangeSet.getNotes();
+            this.metadata = trChangeSet.getMetadata();
+            this.partnerParameters = trChangeSet.getPartnerParameters();
 
             this.status = trChangeSet.isSubmit() ? "SUBMITTED" : "DRAFT";
 
@@ -379,13 +398,16 @@ public class TranslationRequestDataImpl extends TranslationRequestData {
             return notes;
         }
 
-//        public Map<String, String> getMetadata() {
-//            return metadata;
-//        }
+        public Map<String, String> getMetadata() {
+            return metadata;
+        }
+
+        public Map<String, String> getPartnerParameters() {
+            return partnerParameters;
+        }
 
         public String getStatus() {
             return status;
         }
     }
-
 }

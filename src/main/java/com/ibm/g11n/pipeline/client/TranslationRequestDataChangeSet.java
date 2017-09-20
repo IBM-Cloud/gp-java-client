@@ -36,6 +36,7 @@ public class TranslationRequestDataChangeSet {
     private EnumSet<IndustryDomain> domains;
     private List<String> notes;
     private Map<String, String> metadata;
+    private Map<String, String> partnerParameters;
     private boolean submit;
 
     /**
@@ -218,6 +219,9 @@ public class TranslationRequestDataChangeSet {
      * Sets a map containing the metadata of this translation request represented
      * by key-value pairs.
      * 
+     * <p>This map should specify only delta from the current map. To remove a specific
+     * key from existing metadta filed, specify the key to be removed with an empty value.
+     * 
      * @param metadata  A map containing the metadata of this translation request represented
      * by key-value pairs.
      * @return  This object.
@@ -236,6 +240,33 @@ public class TranslationRequestDataChangeSet {
      */
     public Map<String, String> getMetadata() {
         return metadata;
+    }
+
+    /**
+     * Sets a map containing key-value pairs specifying configuration parameters
+     * passed to professional human post editing service provider.
+     * 
+     * <p>This map should specify only delta from the current map. To remove a specific
+     * key from existing partnerParameters filed, specify the key to be removed with an
+     * empty value.
+     * 
+     * @param partnerParameters A map containing key-value pairs specifying configuration parameters.
+     * @return This object.
+     */
+    public TranslationRequestDataChangeSet setPartnerParameters(Map<String, String> partnerParameters) {
+        this.partnerParameters = partnerParameters;
+        return this;
+    }
+
+    /**
+     * Returns a map containing key-value pairs specifying configuration parameters
+     * passed to professional human post editing service provider.
+     * 
+     * @return A map containing key-value pairs specifying configuration parameters
+     * passed to professional human post editing service provider.
+     */
+    public Map<String, String> getPartnerParameters() {
+        return partnerParameters;
     }
 
     /**

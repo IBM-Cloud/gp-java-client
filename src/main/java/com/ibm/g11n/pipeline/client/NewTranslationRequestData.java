@@ -37,6 +37,7 @@ public class NewTranslationRequestData {
     private EnumSet<IndustryDomain> domains;
     private List<String> notes;
     private Map<String, String> metadata;
+    private Map<String, String> partnerParameters;
     private boolean submit;
 
     /**
@@ -231,6 +232,29 @@ public class NewTranslationRequestData {
      */
     public Map<String, String> getMetadata() {
         return metadata;
+    }
+
+    /**
+     * Sets a map containing key-value pairs specifying configuration parameters
+     * passed to professional human post editing service provider.
+     * 
+     * @param partnerParameters A map containing key-value pairs specifying configuration parameters.
+     * @return This object.
+     */
+    public NewTranslationRequestData setPartnerParameters(Map<String, String> partnerParameters) {
+        this.partnerParameters = partnerParameters;
+        return this;
+    }
+
+    /**
+     * Returns a map containing key-value pairs specifying configuration parameters
+     * passed to professional human post editing service provider.
+     * 
+     * @return A map containing key-value pairs specifying configuration parameters
+     * passed to professional human post editing service provider.
+     */
+    public Map<String, String> getPartnerParameters() {
+        return partnerParameters;
     }
 
     /**
