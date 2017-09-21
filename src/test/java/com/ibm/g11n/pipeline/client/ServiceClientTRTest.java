@@ -66,10 +66,25 @@ public class ServiceClientTRTest extends AbstractServiceClientBundleTest {
         final String trPartner = "IBM";
         final int wcByLang = 3;
  
+        final String trMetaKey1 = "mdk1";
+        final String trMetaVal1 = "mdv1";
+        final String trMetaKey2 = "mdk2";
+        final String trMetaVal2 = "mdv2";
+        final Map<String, String> trMetadata = new HashMap<>();
+        trMetadata.put(trMetaKey1, trMetaVal1);
+        trMetadata.put(trMetaKey2, trMetaVal2);
+
+        final String trPartnerParamKey1 = "ppk1";
+        final String trPartnerParamVal1 = "ppv1";
+        final Map<String, String> trPartnerParameters = new HashMap<>();
+        trPartnerParameters.put(trPartnerParamKey1, trPartnerParamVal1);
+
         newTrData
             .setName(trName)
             .setOrganization(trOrg)
-            .setEmails(trEmails);
+            .setEmails(trEmails)
+            .setMetadata(trMetadata)
+            .setPartnerParameters(trPartnerParameters);
 
         TranslationRequestData trData = client.createTranslationRequest(newTrData);
         assertNotNull("New TR", trData);
@@ -81,6 +96,8 @@ public class ServiceClientTRTest extends AbstractServiceClientBundleTest {
         assertEquals("New TR - emails", trEmails, trData.getEmails());
         assertEquals("New TR - partner", trPartner, trData.getPartner());   // implicitly set
         assertEquals("New TR - status", TranslationRequestStatus.DRAFT, trData.getStatus());
+        assertEquals("New TR - metadata", trMetadata, trData.getMetadata());
+        assertEquals("New TR - partnerParameters", trPartnerParameters, trData.getPartnerParameters());
 
         Map<String, WordCountData> wcByBundle = trData.getWordCountData();
         assertNotNull("New TR - words by bundle", wcByBundle);
@@ -106,6 +123,28 @@ public class ServiceClientTRTest extends AbstractServiceClientBundleTest {
         final List<String> trNotes = Collections.singletonList("This is a test bundle.");
         final EnumSet<IndustryDomain> trDomains = EnumSet.of(IndustryDomain.INFTECH, IndustryDomain.EDUCATN);
 
+        final String trMetaVal1Mod = "mdv1-mod";
+        final String trMetaKey3 = "mdk3";
+        final String trMetaVal3 = "mdv3";
+        final Map<String, String> trMetadataDelta = new HashMap<>();
+        trMetadataDelta.put(trMetaKey1, trMetaVal1Mod);
+        trMetadataDelta.put(trMetaKey3, trMetaVal3);
+
+        final Map<String, String> trMetadataExpected = new HashMap<>();
+        trMetadataExpected.put(trMetaKey1, trMetaVal1Mod);
+        trMetadataExpected.put(trMetaKey2, trMetaVal2);
+        trMetadataExpected.put(trMetaKey3, trMetaVal3);
+
+
+        final String trPartnerParamKey2 = "ppk2";
+        final String trPartnerParamVal2 = "ppv2";
+        final Map<String, String> trPartnerParametersDelta = new HashMap<>();
+        trPartnerParametersDelta.put(trPartnerParamKey1, "");    // delete "ppk1"
+        trPartnerParametersDelta.put(trPartnerParamKey2, trPartnerParamVal2);
+
+        final Map<String, String> trPartnerParametersExpected = new HashMap<>();
+        trPartnerParametersExpected.put(trPartnerParamKey2, trPartnerParamVal2);
+
         final String addTrgLang = "de";
         Map<String, Set<String>> updTrgLangsByBundle = new HashMap<>();
         Set<String> updTrgLangs = new HashSet<>();
@@ -118,6 +157,8 @@ public class ServiceClientTRTest extends AbstractServiceClientBundleTest {
             .setNotes(trNotes)
             .setDomains(trDomains)
             .setTargetLanguagesByBundle(updTrgLangsByBundle)
+            .setMetadata(trMetadataDelta)
+            .setPartnerParameters(trPartnerParametersDelta)
             .setSubmit(false);
 
         TranslationRequestData trDataU = client.updateTranslationRequest(trId, trChanges);
@@ -125,6 +166,8 @@ public class ServiceClientTRTest extends AbstractServiceClientBundleTest {
         assertEquals("TR(upd):" + trId + " - name", updTrName, trDataU.getName());
         assertEquals("TR(upd):" + trId + " - notes", trNotes, trDataU.getNotes());
         assertEquals("TR(upd):" + trId + " - domains", trDomains, trDataU.getDomains());
+        assertEquals("TR(upd):" + trId + " - metadata", trMetadataExpected, trDataU.getMetadata());
+        assertEquals("TR(upd):" + trId + " - partnerParameters", trPartnerParametersExpected, trDataU.getPartnerParameters());
 
         // Unchanged
         assertEquals("TR(upd):" + trId + " - organization", trOrg, trDataU.getOrganization());

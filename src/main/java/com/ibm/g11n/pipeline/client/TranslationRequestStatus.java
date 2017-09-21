@@ -24,31 +24,48 @@ public enum TranslationRequestStatus {
     /**
      * Draft status. The translation request is not yet submitted for
      * professional translation post editing service. Globalization Pipeline
-     * user can modify the contents of the translation request.
+     * user can edit the contents of the translation request or delete the
+     * request in this state.
      */
     DRAFT,
     /**
      * Submitted status. The translation request is submitted by user
-     * for professional translation post editing service. At this point,
-     * Globalization Pipeline user cannot modify the contents of the translation
-     * request.
+     * for professional translation post editing service. Globalization Pipeline
+     * user cannot modify the contents of the translation request in this state.
      */
     SUBMITTED,
     /**
      * Started status. The professional translation post editing service
      * provider acknowledged the translation request and started working on
-     * the request.
+     * the request. Globalization Pipeline user cannot modify the contents
+     * of the translation request in this state.
      */
     STARTED,
     /**
      * Translated status. The professional translation post editing service
-     * provider finished editing the translation.
+     * provider finished editing the translation. Globalization Pipeline user
+     * cannot modify the contents of the translation request in this state.
      */
     TRANSLATED,
     /**
      * Merged status. The final translation results from the professional translation
      * post editing provider were merged to the original Globalization Pipeline
-     * bundle.
+     * bundle. Globalization Pipeline user can modify only specific field(s) such
+     * as metadata field in this state.
      */
-    MERGED;
+    MERGED,
+    /**
+     * Cancelled status. The translation request is cancelled. Globalization Pipeline
+     * service or assigned professional translation post editing service provider may
+     * cancel a translation request when the service or the provider cannot handle
+     * the request for some reasons. Globalization Pipeline user cannot modify
+     * the contents of the translation request in this state, but can delete it.
+     */
+    CANCELLED,
+    /**
+     * Unknown status. This is a special status only used when Globalization Pipeline
+     * service returns a status not supported by this SDK. This status should not be
+     * used for updating an existing translation request.
+     */
+    UNKNOWN;
 }
