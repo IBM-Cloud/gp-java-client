@@ -64,7 +64,8 @@ public enum TranslationRequestStatus {
     CANCELLED,
     /**
      * Unknown status. This is a special status only used when Globalization Pipeline
-     * service returns a status not supported by this SDK.
+     * service returns a status not supported by this SDK. This status should not be
+     * used for updating an existing translation request.
      */
     UNKNOWN;
 }
