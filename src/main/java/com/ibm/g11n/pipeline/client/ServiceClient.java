@@ -1,5 +1,5 @@
 /*  
- * Copyright IBM Corp. 2015
+ * Copyright IBM Corp. 2015, 2017
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,6 +15,7 @@
  */
 package com.ibm.g11n.pipeline.client;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -442,6 +443,111 @@ public abstract class ServiceClient {
                     throws ServiceException;
 
     //
+    // {serviceInstanceId}/v2/documents APIs
+    //
+
+    /**
+     * Returns a set of document IDs available in the service instance.
+     * <p>
+     * This operation is only allowed to {@link UserType#ADMINISTRATOR ADMINISTRATOR}
+     * of the service instance.
+     * 
+     * @param type The type of documents being requested.
+     * @return A set of document IDs.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract Set<String> getDocumentIds(DocumentType type) throws ServiceException;
+
+    /**
+     * Creates a new translatble document.
+     * <p>
+     * This operation is only allowed to {@link UserType#ADMINISTRATOR ADMINISTRATOR}
+     * of the service instance.
+     * 
+     * @param documentId
+     *          The new document's ID. Mut not be null or empty.
+     *          <br>The document ID must match a regular expression pattern
+     *          [a-zA-Z0-9][a-zA-Z0-9_.-]* and the length must be less than or equal
+     *          to 255.
+     * @param type The type of document being created.
+     * @param newDocumentData
+     *          The new document's configuration.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract void createDocument(String documentId, DocumentType type,
+            NewDocumentData newDocumentData) throws ServiceException;
+
+    /**
+     * Returns the document's configuration.
+     * <p>
+     * This operation is only allowed to all user types, but only
+     * basic information (source language and target languages) is included
+     * in the result if the requesting user type is {@link UserType#READER READER}.
+     * of the service instance.
+     * 
+     * @param documentId  The document ID. Must not be null or empty.
+     * @param type  The type of document being requested.
+     * @return          The document's configuration.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract DocumentData getDocumentInfo(String documentId, DocumentType type) throws ServiceException;
+    
+    /**
+     * Updates the document's configuration.
+     * <p>
+     * This operation is only allowed to {@link UserType#ADMINISTRATOR ADMINISTRATOR}
+     * of the service instance.
+     * 
+     * @param documentId  The document ID.
+     * @param type The type of document to be updated.
+     * @param changeSet The change set of document configuration.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract void updateDocument(String documentId, DocumentType type,
+            DocumentDataChangeSet changeSet) throws ServiceException;
+
+    /**
+     * Update document content in the source language.
+     * <p>
+     * This operation is only allowed to {@link UserType#ADMINISTRATOR ADMINISTRATOR}
+     * of the service instance.
+     * 
+     * @param documentId  The bundle ID.
+     * @type type  The type of document being uploaded.
+     * @param language  The language specified by BCP 47 language tag.
+     * @param file A file containing the document to be uploaded.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract void updateDocumentContent(String documentId, DocumentType type,
+            String language, File file) throws ServiceException;
+
+    /**
+     * Retrieve the contents of a document in a particular language
+     * <p>
+     * This operation is only allowed to {@link UserType#ADMINISTRATOR ADMINISTRATOR}
+     * of the service instance.
+     * 
+     * @param documentId  The document ID.
+     * @type type  The type of document being requested.
+     * @param language  The language specified by BCP 47 language tag.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract byte[] getDocumentContent(String documentId, DocumentType type,
+            String language) throws ServiceException;
+
+    /**
+     * Deletes a translatable document.
+     * <p>
+     * This operation is only allowed to {@link UserType#ADMINISTRATOR ADMINISTRATOR}
+     * of the service instance.
+     * 
+     * @param documentId  The document ID.
+     * @param type The type of document to be deleted.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract void deleteDocument(String documentId, DocumentType type) throws ServiceException;
+        
+    //
     // {serviceInstanceId}/v2/users APIs
     //
 
@@ -762,4 +868,5 @@ public abstract class ServiceClient {
      */
     public abstract void getXliffFromTranslationRequest(String trId, String srcLanguage,
             String trgLanguage, OutputStream outputXliff) throws ServiceException, IOException;
+
 }
