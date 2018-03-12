@@ -1,5 +1,5 @@
 /*  
- * Copyright IBM Corp. 2015, 2017
+ * Copyright IBM Corp. 2018
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -769,7 +769,7 @@ public abstract class ServiceClient {
      */
     public abstract TranslationRequestData createTranslationRequest(NewTranslationRequestData newTranslationRequestData)
             throws ServiceException;
-
+    
     /**
      * Updates the translation request.
      * 
@@ -868,5 +868,140 @@ public abstract class ServiceClient {
      */
     public abstract void getXliffFromTranslationRequest(String trId, String srcLanguage,
             String trgLanguage, OutputStream outputXliff) throws ServiceException, IOException;
+    
+    
+    //
+    // {serviceInstanceId}/v2/doc-trs APIs (for documents)
+    //
 
+    /**
+     * Returns a map containing <code>DocumentTranslationRequestData</code> indexed by translation
+     * request ids.
+     * 
+     * @return A map containing <code>DocumentTranslationRequestData</code> indexed by translation.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract Map<String, DocumentTranslationRequestData> getDocumentTranslationRequests() throws ServiceException;
+
+    /**
+     * Returns the document translation request specified by the translation request ID.
+     * 
+     * @param trId  The translation request id.
+     * @return  The document translation request data.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract DocumentTranslationRequestData getDocumentTranslationRequest(String trId)
+            throws ServiceException;
+
+    /**
+     * Creates a new document translation request.
+     * 
+     * @param newDocumentTranslationRequestData The new translation request.
+     * @return  The translation request created by this operation.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract DocumentTranslationRequestData createDocumentTranslationRequest(NewDocumentTranslationRequestData newTranslationRequestData)
+            throws ServiceException;
+    
+    /**
+     * Updates the document translation request.
+     * 
+     * @param trId      The translation request id.
+     * @param changeSet The change set of docuemnt translation request data.
+     * @return  The document translation request updated by this operation.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract DocumentTranslationRequestData updateDocumentTranslationRequest(String trId,
+            DocumentTranslationRequestDataChangeSet changeSet) throws ServiceException;
+
+    /**
+     * Deletes the document translation request.
+     * 
+     * @param trId  The translation request id.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract void deleteDocumentTranslationRequest(String trId) throws ServiceException;
+
+    /**
+     * Returns the document's information included in the translation request.
+     * 
+     * @param trId      The translation request id.
+     * @param documentId  The document id.
+     * @param type The document type.
+     * @return  The document's information
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract DocumentData getTRDocumentInfo(String trId, String documentId, DocumentType type)
+            throws ServiceException;
+
+    /**
+     * Returns a map containing segments indexed by segment key
+     * in the document and the language included in the document translation request.
+     * 
+     * @param trId      The translation request id.
+     * @param bundleId  The document id.
+     * @param type      The document type.
+     * @param language  The language specified by BCP 47 language tag.
+     * @return  A map containing segments indexed by segment key.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract Map<String, SegmentData> getTRSegments(String trId, String documentId, DocumentType type,
+            String language) throws ServiceException;
+
+    /**
+     * Returns the segment specified by the document id, the language and the segment key
+     * included in the document translation request.
+     * 
+     * @param trId      The translation request id.
+     * @param bundleId  The document id.
+     * @param type      The document type.
+     * @param language  The language specified by BCP 47 language tag.
+     * @param segmentKey The segment key.
+     * @return  The resource entry data.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract SegmentData getTRSegment(String trId, String documentId, DocumentType type, String language,
+            String segmentKey) throws ServiceException;
+
+    //
+    // {serviceInstanceId}/v2/doc-xliff APIs
+    //
+
+    /**
+     * Returns document contents for the specified source-target language pair in XLIFF 2.0
+     * format.
+     * 
+     * @param srcLanguage   The source language specified by BCP 47 language tag.
+     * @param trgLanguage   The target language specified by BCP 47 language tag.
+     * @param documentsMap  The map of document type to set of document ids
+     * @param outputXliff   The output XLIFF stream.
+     * @throws ServiceException when the operation failed.
+     * @throws IOException      when writing XLIFF data to the output stream failed.
+     */
+    public abstract void getXliffFromDocuments(String srcLanguage, String trgLanguage, Map<DocumentType, Set<String>> documentsMap, OutputStream outputXliff) throws ServiceException, IOException;
+
+    /**
+     * Updates document contents with the input XLIFF 2.0 stream. The input XLIFF must contains
+     * segments for a pair of source language and target language.
+     * 
+     * @param inputXliff    The input XLIFF stream.
+     * @throws ServiceException when the operation failed.
+     * @throws IOException      when reading XLIFF data from the input stream failed.
+     */
+    public abstract void updateDocumentsWithXliff(InputStream inputXliff) throws ServiceException, IOException;
+
+    /**
+     * Returns document contents for the specified source-target language pair in XLIFF 2.0
+     * format included in the translation request.
+     * 
+     * @param trId          The translation request ID.
+     * @param srcLanguage   The source language specified by BCP 47 language tag.
+     * @param trgLanguage   The target language specified by BCP 47 language tag.
+     * @param outputXliff   The output XLIFF stream.
+     * @throws ServiceException when the operation failed.
+     * @throws IOException      when writing XLIFF data to the output stream failed.
+     */
+    public abstract void getXliffFromDocumentTranslationRequest(String trId, String srcLanguage,
+            String trgLanguage, OutputStream outputXliff) throws ServiceException, IOException;
+    
 }
