@@ -354,7 +354,7 @@ public class TranslationRequestDataImpl extends TranslationRequestData {
             this.metadata = trChangeSet.getMetadata();
             this.partnerParameters = trChangeSet.getPartnerParameters();
 
-            this.status = trChangeSet.isSubmit() ? "SUBMITTED" : "DRAFT";
+            this.status = trChangeSet.isSubmit() ? "SUBMITTED" : null;
 
             Set<IndustryDomain> domainEnums = trChangeSet.getDomains();
             if (domainEnums != null && !domainEnums.isEmpty()) {
