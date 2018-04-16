@@ -609,7 +609,7 @@ public class ServiceClientImpl extends ServiceClient {
     }
 
     @Override
-    public void createDocument(String documentId, DocumentType type, NewDocumentData newDocumentData)
+    public void createDocument(DocumentType type, String documentId, NewDocumentData newDocumentData)
             throws ServiceException {
         if (newDocumentData == null) {
             throw new IllegalArgumentException("newDocumentData must be specified.");
@@ -635,7 +635,7 @@ public class ServiceClientImpl extends ServiceClient {
     }
 
     @Override
-    public DocumentData getDocumentInfo(String documentId, DocumentType type) throws ServiceException {
+    public DocumentData getDocumentInfo(DocumentType type, String documentId) throws ServiceException {
         if (Strings.isNullOrEmpty(documentId)) {
             throw new IllegalArgumentException("documentId must be specified.");
         }
@@ -656,7 +656,7 @@ public class ServiceClientImpl extends ServiceClient {
     }
     
     @Override
-    public void updateDocument(String documentId, DocumentType type, DocumentDataChangeSet changeSet)
+    public void updateDocument(DocumentType type, String documentId, DocumentDataChangeSet changeSet)
             throws ServiceException {
         if (Strings.isNullOrEmpty(documentId)) {
             throw new IllegalArgumentException("documentId must be specified.");
@@ -681,7 +681,7 @@ public class ServiceClientImpl extends ServiceClient {
     }
     
     @Override
-    public void deleteDocument(String documentId, DocumentType type) throws ServiceException {
+    public void deleteDocument(DocumentType type, String documentId) throws ServiceException {
 
         GetDocumentInfoResponse resp = invokeApiJson(
                 "DELETE",
@@ -697,7 +697,7 @@ public class ServiceClientImpl extends ServiceClient {
     }
 
     @Override
-    public void updateDocumentContent(String documentId, DocumentType type, String language,
+    public void updateDocumentContent(DocumentType type, String documentId, String language,
             File file)
             throws ServiceException {
         if (Strings.isNullOrEmpty(documentId)) {
@@ -734,8 +734,9 @@ public class ServiceClientImpl extends ServiceClient {
         }
 
     }
+    
     @Override
-    public byte[] getDocumentContent(String documentId, DocumentType type, String language)
+    public byte[] getDocumentContent(DocumentType type, String documentId, String language)
             throws ServiceException {
         if (Strings.isNullOrEmpty(documentId)) {
             throw new IllegalArgumentException("documentId must be specified.");
@@ -764,6 +765,13 @@ public class ServiceClientImpl extends ServiceClient {
                     + " " + apiPath + ", body: " + bodyStr);
         }
         return resp.body;
+    }
+
+    @Override
+    public void writeDocumentContent(DocumentType type, String documentId, String language, OutputStream os)
+            throws IllegalArgumentException, ServiceException, IOException {
+        
+        os.write(getDocumentContent(type, documentId, language));
     }
 
     //
