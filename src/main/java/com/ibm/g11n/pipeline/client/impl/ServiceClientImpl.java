@@ -1764,9 +1764,7 @@ public class ServiceClientImpl extends ServiceClient {
                 new EnumMapInstanceCreator<TranslationStatus, Integer>(TranslationStatus.class));
 
         builder.registerTypeAdapterFactory(new NullMapValueTypeAdapterFactory());
-
-       // builder.registerTypeAdapter(DocumentData.class, new DocumentDataInstanceCreator());
-        
+       
         return builder.create();
     }
 
