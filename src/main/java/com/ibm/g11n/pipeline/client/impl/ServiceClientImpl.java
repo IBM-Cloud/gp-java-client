@@ -1,5 +1,5 @@
 /*  
- * Copyright IBM Corp. 2015
+ * Copyright IBM Corp. 2015, 2017
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,8 @@ package com.ibm.g11n.pipeline.client.impl;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -39,11 +41,14 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TimeZone;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
+import com.google.common.base.Strings;
 import com.google.common.io.BaseEncoding;
+import com.google.common.io.ByteStreams;
 import com.google.common.net.UrlEscapers;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -57,9 +62,13 @@ import com.google.gson.stream.JsonWriter;
 import com.ibm.g11n.pipeline.client.BundleData;
 import com.ibm.g11n.pipeline.client.BundleDataChangeSet;
 import com.ibm.g11n.pipeline.client.BundleMetrics;
+import com.ibm.g11n.pipeline.client.DocumentData;
+import com.ibm.g11n.pipeline.client.DocumentDataChangeSet;
+import com.ibm.g11n.pipeline.client.DocumentType;
 import com.ibm.g11n.pipeline.client.LanguageMetrics;
 import com.ibm.g11n.pipeline.client.MTServiceBindingData;
 import com.ibm.g11n.pipeline.client.NewBundleData;
+import com.ibm.g11n.pipeline.client.NewDocumentData;
 import com.ibm.g11n.pipeline.client.NewResourceEntryData;
 import com.ibm.g11n.pipeline.client.NewTranslationConfigData;
 import com.ibm.g11n.pipeline.client.NewTranslationRequestData;
@@ -80,6 +89,7 @@ import com.ibm.g11n.pipeline.client.TranslationStatus;
 import com.ibm.g11n.pipeline.client.UserData;
 import com.ibm.g11n.pipeline.client.UserDataChangeSet;
 import com.ibm.g11n.pipeline.client.impl.BundleDataImpl.RestBundle;
+import com.ibm.g11n.pipeline.client.impl.DocumentDataImpl.RestDocument;
 import com.ibm.g11n.pipeline.client.impl.MTServiceBindingDataImpl.RestMTServiceBinding;
 import com.ibm.g11n.pipeline.client.impl.ResourceEntryDataImpl.RestResourceEntry;
 import com.ibm.g11n.pipeline.client.impl.ServiceInfoImpl.ExternalServiceInfoImpl.RestExternalServiceInfo;
@@ -171,6 +181,7 @@ public class ServiceClientImpl extends ServiceClient {
 
         return resp.bundleIds;
     }
+
 
     @Override
     public void createBundle(String bundleId, NewBundleData newBundleData)
@@ -566,6 +577,201 @@ public class ServiceClientImpl extends ServiceClient {
         if (resp.getStatus() == Status.ERROR) {
             throw new ServiceException(resp.getMessage());
         }
+    }
+
+    //
+    // Document API
+    //
+
+    private static class GetDocumentListResponse extends ServiceResponse {
+        Set<RestDocument> documentMetaDataSet;
+    }
+    
+    @Override
+    public Set<String> getDocumentIds(DocumentType type) throws ServiceException {
+        GetDocumentListResponse resp = invokeApiJson(
+                "GET",
+                escapePathSegment(account.getInstanceId()) + "/v2/documents/" + type.toString().toLowerCase(),
+                null,
+                GetDocumentListResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+
+        Set<String> result = new TreeSet<>();
+        if (resp.documentMetaDataSet != null) {
+            for (RestDocument doc : resp.documentMetaDataSet) {
+                result.add(doc.getDocumentId());
+            }
+        }
+        return result;
+    }
+
+    @Override
+    public void createDocument(DocumentType type, String documentId, NewDocumentData newDocumentData)
+            throws ServiceException {
+        if (newDocumentData == null) {
+            throw new IllegalArgumentException("newDocumentData must be specified.");
+        }
+
+        Gson gson = createGson(NewBundleData.class.getName());
+        String jsonBody = gson.toJson(newDocumentData, NewDocumentData.class);
+        ServiceResponse resp = invokeApiJson(
+                "PUT",
+                escapePathSegment(account.getInstanceId()) + "/v2/documents/"
+                    + type.toString().toLowerCase() + "/"
+                    + escapePathSegment(documentId),
+                jsonBody,
+                ServiceResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+    }
+    
+    private static class GetDocumentInfoResponse extends ServiceResponse {
+        RestDocument documentData;
+    }
+
+    @Override
+    public DocumentData getDocumentInfo(DocumentType type, String documentId) throws ServiceException {
+        if (Strings.isNullOrEmpty(documentId)) {
+            throw new IllegalArgumentException("documentId must be specified.");
+        }
+
+        GetDocumentInfoResponse resp = invokeApiJson(
+                "GET",
+                escapePathSegment(account.getInstanceId()) + "/v2/documents/"
+                    + type.toString().toLowerCase() + "/"
+                    + escapePathSegment(documentId),
+                null,
+                GetDocumentInfoResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+
+        return new DocumentDataImpl(resp.documentData);
+    }
+    
+    @Override
+    public void updateDocument(DocumentType type, String documentId, DocumentDataChangeSet changeSet)
+            throws ServiceException {
+        if (Strings.isNullOrEmpty(documentId)) {
+            throw new IllegalArgumentException("documentId must be specified.");
+        }
+        if (changeSet == null) {
+            throw new IllegalArgumentException("changeSet must be specified.");
+        }
+
+        Gson gson = createGson(DocumentDataChangeSet.class.getName());
+        String jsonBody = gson.toJson(changeSet, DocumentDataChangeSet.class);
+        ServiceResponse resp = invokeApiJson(
+                "POST",
+                escapePathSegment(account.getInstanceId()) + "/v2/documents/"
+                    + type.toString().toLowerCase() + "/"
+                    + escapePathSegment(documentId),
+                jsonBody,
+                ServiceResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+    }
+    
+    @Override
+    public void deleteDocument(DocumentType type, String documentId) throws ServiceException {
+
+        GetDocumentInfoResponse resp = invokeApiJson(
+                "DELETE",
+                escapePathSegment(account.getInstanceId()) + "/v2/documents/"
+                    + type.toString().toLowerCase() + "/"
+                    + escapePathSegment(documentId),
+                null,
+                GetDocumentInfoResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+    }
+
+    @Override
+    public void updateDocumentContent(DocumentType type, String documentId, String language,
+            File file)
+            throws ServiceException {
+        if (Strings.isNullOrEmpty(documentId)) {
+            throw new IllegalArgumentException("documentId must be specified.");
+        }
+        if (Strings.isNullOrEmpty(language)) {
+            throw new IllegalArgumentException("language must be specified.");
+        }
+        if (file == null || !file.isFile()) {
+            throw new IllegalArgumentException("file must be a regular file.");
+        }
+
+        FileInputStream fis;
+        try {
+            fis = new FileInputStream(file);
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to read the document content from "
+                    + file.getName() + ": " + e.getMessage(), e);
+        }
+
+        ServiceResponse resp = invokeApiInputStream(
+                "PUT",
+                escapePathSegment(account.getInstanceId()) + "/v2/documents/"
+                        + type.toString().toLowerCase() + "/"
+                        + documentId + "/"
+                        + language,
+                type == DocumentType.HTML ? "text/html" : "text/plain",
+                fis,
+                ServiceResponse.class,
+                false);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+
+    }
+    
+    @Override
+    public byte[] getDocumentContent(DocumentType type, String documentId, String language)
+            throws ServiceException {
+        if (Strings.isNullOrEmpty(documentId)) {
+            throw new IllegalArgumentException("documentId must be specified.");
+        }
+        if (Strings.isNullOrEmpty(language)) {
+            throw new IllegalArgumentException("language must be specified.");
+        }
+
+        ApiResponse resp;
+        String method = "GET";
+        String apiPath = escapePathSegment(account.getInstanceId()) + "/v2/documents/"
+                        + type.toString().toLowerCase() + "/"
+                        + documentId + "/"
+                        + language;
+                
+        try {
+            resp = invokeApi(method,apiPath,null,null,false);
+        } catch (Exception e) {
+            String errMsg = "Error while processing API request GET " + apiPath;
+            throw new ServiceException(errMsg, e);
+        }
+        
+        if (resp.status >= 300) {
+            String bodyStr = resp.body != null ? new String(resp.body, StandardCharsets.UTF_8) : null;
+            throw new ServiceException("Received HTTP status: " + resp.status + " from " + method
+                    + " " + apiPath + ", body: " + bodyStr);
+        }
+        return resp.body;
+    }
+
+    @Override
+    public void writeDocumentContent(DocumentType type, String documentId, String language, OutputStream os)
+            throws IllegalArgumentException, ServiceException, IOException {
+        
+        os.write(getDocumentContent(type, documentId, language));
     }
 
     //
@@ -1255,6 +1461,29 @@ public class ServiceClientImpl extends ServiceClient {
             Reader reader = new InputStreamReader(new ByteArrayInputStream(resp.body), StandardCharsets.UTF_8);
             Gson gson = createGson(classOfT.getName());
             responseObj = gson.fromJson(reader, classOfT);
+            
+
+        } catch (Exception e) {
+            // Error handling
+            String errMsg = "Error while processing API request " + method + " " + apiPath;
+            throw new ServiceException(errMsg, e);
+        }
+
+        return responseObj;
+    }
+    
+    private <T> T invokeApiInputStream(String method, String apiPath, String contentType, FileInputStream fis, Class<T> classOfT,
+            boolean anonymous) throws ServiceException {
+
+        byte[] requestBody = null;
+        T responseObj = null;
+        try {
+            requestBody = ByteStreams.toByteArray((InputStream) fis);
+            ApiResponse resp = invokeApi(method, apiPath, contentType, requestBody, anonymous);
+
+            Reader reader = new InputStreamReader(new ByteArrayInputStream(resp.body), StandardCharsets.UTF_8);
+            Gson gson = createGson(classOfT.getName());
+            responseObj = gson.fromJson(reader, classOfT);
 
         } catch (Exception e) {
             // Error handling
@@ -1535,7 +1764,7 @@ public class ServiceClientImpl extends ServiceClient {
                 new EnumMapInstanceCreator<TranslationStatus, Integer>(TranslationStatus.class));
 
         builder.registerTypeAdapterFactory(new NullMapValueTypeAdapterFactory());
-
+       
         return builder.create();
     }
 
