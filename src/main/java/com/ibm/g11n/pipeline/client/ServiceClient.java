@@ -512,7 +512,7 @@ public abstract class ServiceClient {
      * This operation is only allowed to {@link UserType#ADMINISTRATOR ADMINISTRATOR}
      * of the service instance.
      * 
-     * @type type  The type of document being uploaded.
+     * @param type  The type of document being uploaded.
      * @param documentId  The document ID.
      * @param language  The language specified by BCP 47 language tag. Only the source
      *                  language may currently be updated, and a ServiceException
@@ -527,9 +527,10 @@ public abstract class ServiceClient {
     /**
      * Retrieve the contents of a document in a particular language
      * 
-     * @type type  The type of document being requested.
+     * @param type  The type of document being requested.
      * @param documentId  The document ID.
      * @param language  The language specified by BCP 47 language tag.
+     * @return The contents of the document.
      * @throws IllegalArgumentException if the documentId or language parameters 
      *         are invalid.
      * @throws ServiceException when the operation failed.
@@ -540,9 +541,10 @@ public abstract class ServiceClient {
     /**
      * Write the contents of a document in a particular language to an OutputStream
      * 
-     * @type type  The type of document being requested.
+     * @param type  The type of document being requested.
      * @param documentId  The document ID.
      * @param language  The language specified by BCP 47 language tag.
+     * @param os  The output stream where the contents of the document will be written.
      * @throws IllegalArgumentException if the documentId or language parameters 
      *         are invalid.
      * @throws ServiceException when the operation failed.
