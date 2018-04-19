@@ -914,7 +914,7 @@ public abstract class ServiceClient {
     /**
      * Creates a new document translation request.
      * 
-     * @param newDocumentTranslationRequestData The new translation request.
+     * @param newTranslationRequestData The new document translation request data.
      * @return  The translation request created by this operation.
      * @throws ServiceException when the operation failed.
      */
