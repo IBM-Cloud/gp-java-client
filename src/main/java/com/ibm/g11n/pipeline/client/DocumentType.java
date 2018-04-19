@@ -1,5 +1,5 @@
 /*
- * Copyright IBM Corp. 2017
+ * Copyright IBM Corp. 2017, 2018
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,6 +21,12 @@ package com.ibm.g11n.pipeline.client;
  * @author John Emmons
  */
 public enum DocumentType {
+    /**
+     * HTML Document.
+     */
     HTML,
+    /**
+     * Markdown Document.
+     */
     MD
 }

@@ -17,6 +17,7 @@ package com.ibm.g11n.pipeline.client;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
@@ -40,7 +41,12 @@ import org.junit.Test;
  * @author yoshito_umaoka
  */
 public class ServiceClientTRTest extends AbstractServiceClientBundleTest {
-    // TODO: Test case for submitting a TR without billing
+
+    private static final boolean TEST_TR_SUBMIT;
+    static {
+        String testSubmit = System.getProperty("TEST_TR_SUBMIT", "false");
+        TEST_TR_SUBMIT = testSubmit.equalsIgnoreCase("true");
+    }
 
     // Create / update and delete translation request
     @Test
@@ -205,12 +211,77 @@ public class ServiceClientTRTest extends AbstractServiceClientBundleTest {
             fail("IOException: " + e.getMessage());
         }
 
-        // Delete bundle
+        // Delete TR
         client.deleteTranslationRequest(trId);
 
         // Make sure the TR was deleted
         Map<String, TranslationRequestData> trs = client.getTranslationRequests();
         assertFalse("TR(del):" + trId, trs.containsKey(trId));
+
+        cleanupBundles();
+    }
+
+    @Test
+    public void testTRSubmit() throws ServiceException {
+        if (!TEST_TR_SUBMIT) {
+            // Skip this if env var TEST_SUBMIT is not true
+            return;
+        }
+
+        // Creates a new test bundle
+        final String trTestBundleId = testBundleId("TR_TestSubmit");
+        final String srcLang = "en";
+
+        createBundleWithStrings(trTestBundleId, srcLang, "fr,de", null,
+                new String[][] {{"key1", "Hello"}, {"key2", "Good bye"}});
+
+        // Creates a new translation request
+        final String trTrgLang = "de";
+        Map<String, Set<String>> trgLangsByBundle = new HashMap<>();
+        trgLangsByBundle.put(trTestBundleId, Collections.singleton(trTrgLang));
+        NewTranslationRequestData newTrData = new NewTranslationRequestData(trgLangsByBundle);
+
+        final String trName = "Test TR Submit";
+        final String trOrg = "Test Org";
+        final List<String> trEmails = Collections.singletonList("gp-test@ibm.com");
+        final String trPartner = "IBM";
+ 
+        final String metaKeyPhase = "phase";
+        final String metaVal1 = "1";
+        final Map<String, String> trMetadata = new HashMap<>();
+        trMetadata.put(metaKeyPhase, metaVal1);
+
+        newTrData
+            .setPartner(trPartner)
+            .setName(trName)
+            .setOrganization(trOrg)
+            .setEmails(trEmails)
+            .setMetadata(trMetadata)
+            .setSubmit(true);
+
+        TranslationRequestData trData = client.createTranslationRequest(newTrData);
+        String trId = trData.getId();
+
+        assertNotEquals("Status of TR should not be DRAFT", TranslationRequestStatus.DRAFT, trData.getStatus());
+
+        // Update metadata
+        TranslationRequestDataChangeSet trChanges = new TranslationRequestDataChangeSet();
+
+        final String metaVal2 = "2";
+        final Map<String, String> updMetadata = new HashMap<>();
+        updMetadata.put(metaKeyPhase, metaVal2);
+
+        trChanges.setMetadata(updMetadata);
+
+        TranslationRequestData updData = client.updateTranslationRequest(trId, trChanges);
+
+        Map<String, String> modMetadata = updData.getMetadata();
+        assertNotNull("TR metadata", modMetadata);
+        String metaVal = modMetadata.get(metaKeyPhase);
+        assertEquals("Updated metadata 'phase'", metaVal2, metaVal);
+
+        // TODO: Cleanup - cannot delete a TR immediately
+        // client.deleteTranslationRequest(trId);
 
         cleanupBundles();
     }

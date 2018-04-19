@@ -1,5 +1,5 @@
 /*  
- * Copyright IBM Corp. 2017
+ * Copyright IBM Corp. 2017, 2018
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -37,8 +37,14 @@ public abstract class DocumentData {
     /**
      * Protected constructor for a subclass extending <code>DocumentData</code>.
      * 
-     * @param sourceLanguage    The source language of this bundle, specified by BCP 47
+     * @param documentId        The ID of the document
+     * @param type              The type of document (HTML or MD)
+     * @param sourceLanguage    The source language of this document, specified by BCP 47
      *                          language tag such as "en" for English.
+     * @param readOnly          Specifies whether the document is read-only.
+     * @param updatedBy         User name who last updated the document.
+     * @param updatedAt         Time of the latest update to the document.
+     * 
      */
     public DocumentData(String documentId, DocumentType type, String sourceLanguage, boolean readOnly, String updatedBy, Date updatedAt) {
         this.documentId = documentId;
@@ -59,6 +65,8 @@ public abstract class DocumentData {
     }
 
     /**
+     * Returns the read only status of this document.
+     * 
      * @return the readOnly
      */
     public boolean isReadOnly() {
@@ -66,6 +74,8 @@ public abstract class DocumentData {
     }
 
     /**
+     * Returns the user name of the latest update to the document.
+     * 
      * @return the updatedBy
      */
     public String getUpdatedBy() {
@@ -73,6 +83,8 @@ public abstract class DocumentData {
     }
 
     /**
+     * Returns the time of the latest update to the document.
+     * 
      * @return the updatedAt
      */
     public Date getUpdatedAt() {
@@ -101,6 +113,8 @@ public abstract class DocumentData {
     public abstract Map<String, String> getMetadata();
 
     /**
+     * Returns the unique ID of the document.
+     * 
      * @return the documentId
      */
     public String getDocumentId() {
@@ -108,6 +122,8 @@ public abstract class DocumentData {
     }
 
     /**
+     * Returns the document's type.
+     * 
      * @return the type
      */
     public DocumentType getType() {
