@@ -944,12 +944,12 @@ public abstract class ServiceClient {
      * Returns the document's information included in the translation request.
      * 
      * @param trId      The translation request id.
-     * @param documentId  The document id.
      * @param type The document type.
+     * @param documentId  The document id.
      * @return  The document's information
      * @throws ServiceException when the operation failed.
      */
-    public abstract DocumentData getTRDocumentInfo(String trId, String documentId, DocumentType type)
+    public abstract DocumentData getTRDocumentInfo(String trId, DocumentType type, String documentId)
             throws ServiceException;
 
     /**
@@ -957,13 +957,13 @@ public abstract class ServiceClient {
      * in the document and the language included in the document translation request.
      * 
      * @param trId      The translation request id.
-     * @param bundleId  The document id.
      * @param type      The document type.
+     * @param documentId  The document id.
      * @param language  The language specified by BCP 47 language tag.
      * @return  A map containing segments indexed by segment key.
      * @throws ServiceException when the operation failed.
      */
-    public abstract Map<String, SegmentData> getTRSegments(String trId, String documentId, DocumentType type,
+    public abstract Map<String, SegmentData> getTRSegments(String trId, DocumentType type, String documentId,
             String language) throws ServiceException;
 
     /**
@@ -971,14 +971,14 @@ public abstract class ServiceClient {
      * included in the document translation request.
      * 
      * @param trId      The translation request id.
-     * @param bundleId  The document id.
      * @param type      The document type.
+     * @param documentId  The document id.
      * @param language  The language specified by BCP 47 language tag.
      * @param segmentKey The segment key.
      * @return  The resource entry data.
      * @throws ServiceException when the operation failed.
      */
-    public abstract SegmentData getTRSegment(String trId, String documentId, DocumentType type, String language,
+    public abstract SegmentData getTRSegment(String trId, DocumentType type, String documentId, String language,
             String segmentKey) throws ServiceException;
 
     //

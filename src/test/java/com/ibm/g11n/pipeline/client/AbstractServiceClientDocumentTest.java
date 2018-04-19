@@ -17,10 +17,8 @@ package com.ibm.g11n.pipeline.client;
 
 import java.io.File;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 /**
@@ -35,13 +33,13 @@ public class AbstractServiceClientDocumentTest extends AbstractServiceClientTest
             Set<String> documentIds = client.getDocumentIds(DocumentType.HTML);
             for (String documentId : documentIds) {
                 if (isTestDocumentId(documentId)) {
-                    client.deleteDocument(documentId, DocumentType.HTML);
+                    client.deleteDocument(DocumentType.HTML, documentId);
                 }
             }
             documentIds = client.getDocumentIds(DocumentType.MD);
             for (String documentId : documentIds) {
                 if (isTestDocumentId(documentId)) {
-                    client.deleteDocument(documentId, DocumentType.MD);
+                    client.deleteDocument(DocumentType.MD, documentId);
                 }
             }
         }
@@ -77,7 +75,7 @@ public class AbstractServiceClientDocumentTest extends AbstractServiceClientTest
         if (notes != null) {
             newDocumentData.setNotes(notes);
         }
-        client.createDocument(documentId, type, newDocumentData);
+        client.createDocument(type, documentId, newDocumentData);
     }
 
     /**
@@ -108,7 +106,7 @@ public class AbstractServiceClientDocumentTest extends AbstractServiceClientTest
         }
         createDocument(documentId, type, srcLang, trgLangSet, notes);
         if (file != null) {
-            client.updateDocumentContent(documentId, type, srcLang, file);
+            client.updateDocumentContent(type, documentId, srcLang, file);
         }
     }
 

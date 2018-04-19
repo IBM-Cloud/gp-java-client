@@ -1926,11 +1926,10 @@ public class ServiceClientImpl extends ServiceClient {
 
 
     /* (non-Javadoc)
-     * @see com.ibm.g11n.pipeline.client.ServiceClient#getTRDocumentInfo(java.lang.String, java.lang.String, com.ibm.g11n.pipeline.client.DocumentType)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#getTRDocumentInfo(java.lang.String, com.ibm.g11n.pipeline.client.DocumentType, java.lang.String)
      */
     @Override
-    public DocumentData getTRDocumentInfo(String trId, String documentId,
-            DocumentType type) throws ServiceException {
+    public DocumentData getTRDocumentInfo(String trId, DocumentType type, String documentId) throws ServiceException {
         if (trId == null || trId.isEmpty()) {
             throw new IllegalArgumentException("Non-empty trId must be specified.");
         }
@@ -1957,11 +1956,11 @@ public class ServiceClientImpl extends ServiceClient {
     }
 
     /* (non-Javadoc)
-     * @see com.ibm.g11n.pipeline.client.ServiceClient#getTRSegments(java.lang.String, java.lang.String, com.ibm.g11n.pipeline.client.DocumentType, java.lang.String)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#getTRSegments(java.lang.String, com.ibm.g11n.pipeline.client.DocumentType, java.lang.String, java.lang.String)
      */
     @Override
     public Map<String, SegmentData> getTRSegments(String trId,
-            String documentId, DocumentType type, String language)
+        DocumentType type, String documentId, String language)
             throws ServiceException {
         if (trId == null || trId.isEmpty()) {
             throw new IllegalArgumentException("Non-empty trId must be specified.");
@@ -2000,11 +1999,11 @@ public class ServiceClientImpl extends ServiceClient {
     }
 
     /* (non-Javadoc)
-     * @see com.ibm.g11n.pipeline.client.ServiceClient#getTRSegment(java.lang.String, java.lang.String, com.ibm.g11n.pipeline.client.DocumentType, java.lang.String, java.lang.String)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#getTRSegment(java.lang.String, com.ibm.g11n.pipeline.client.DocumentType, java.lang.String, java.lang.String, java.lang.String)
      */
     @Override
-    public SegmentData getTRSegment(String trId, String documentId,
-            DocumentType type, String language, String segmentKey)
+    public SegmentData getTRSegment(String trId, DocumentType type, String documentId,
+             String language, String segmentKey)
             throws ServiceException {
         if (trId == null || trId.isEmpty()) {
             throw new IllegalArgumentException("Non-empty trId must be specified.");
