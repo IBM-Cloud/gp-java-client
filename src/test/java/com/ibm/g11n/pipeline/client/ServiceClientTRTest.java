@@ -205,6 +205,7 @@ public class ServiceClientTRTest extends AbstractServiceClientBundleTest {
             // Following code does not really check the contents
             byte[] xliffBytes = outputXliff.toByteArray();
             String xliff = new String(xliffBytes, StandardCharsets.UTF_8);
+            System.out.println(xliff);
             assertTrue("TR:" + trId + " - XLIFF output", xliff.startsWith("<?xml version=\"1.0\"?>\n<xliff "));
         } catch (IOException e) {
             fail("IOException: " + e.getMessage());

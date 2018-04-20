@@ -1,5 +1,5 @@
 /*  
- * Copyright IBM Corp. 2015, 2017
+ * Copyright IBM Corp. 2015, 2018
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -64,11 +64,14 @@ import com.ibm.g11n.pipeline.client.BundleDataChangeSet;
 import com.ibm.g11n.pipeline.client.BundleMetrics;
 import com.ibm.g11n.pipeline.client.DocumentData;
 import com.ibm.g11n.pipeline.client.DocumentDataChangeSet;
+import com.ibm.g11n.pipeline.client.DocumentTranslationRequestData;
+import com.ibm.g11n.pipeline.client.DocumentTranslationRequestDataChangeSet;
 import com.ibm.g11n.pipeline.client.DocumentType;
 import com.ibm.g11n.pipeline.client.LanguageMetrics;
 import com.ibm.g11n.pipeline.client.MTServiceBindingData;
 import com.ibm.g11n.pipeline.client.NewBundleData;
 import com.ibm.g11n.pipeline.client.NewDocumentData;
+import com.ibm.g11n.pipeline.client.NewDocumentTranslationRequestData;
 import com.ibm.g11n.pipeline.client.NewResourceEntryData;
 import com.ibm.g11n.pipeline.client.NewTranslationConfigData;
 import com.ibm.g11n.pipeline.client.NewTranslationRequestData;
@@ -76,6 +79,7 @@ import com.ibm.g11n.pipeline.client.NewUserData;
 import com.ibm.g11n.pipeline.client.ResourceEntryData;
 import com.ibm.g11n.pipeline.client.ResourceEntryDataChangeSet;
 import com.ibm.g11n.pipeline.client.ReviewStatusMetrics;
+import com.ibm.g11n.pipeline.client.SegmentData;
 import com.ibm.g11n.pipeline.client.ServiceAccount;
 import com.ibm.g11n.pipeline.client.ServiceClient;
 import com.ibm.g11n.pipeline.client.ServiceException;
@@ -90,8 +94,11 @@ import com.ibm.g11n.pipeline.client.UserData;
 import com.ibm.g11n.pipeline.client.UserDataChangeSet;
 import com.ibm.g11n.pipeline.client.impl.BundleDataImpl.RestBundle;
 import com.ibm.g11n.pipeline.client.impl.DocumentDataImpl.RestDocument;
+import com.ibm.g11n.pipeline.client.impl.DocumentTranslationRequestDataImpl.RestDocumentTranslationRequest;
+import com.ibm.g11n.pipeline.client.impl.DocumentTranslationRequestDataImpl.RestInputDocumentTranslationRequestData;
 import com.ibm.g11n.pipeline.client.impl.MTServiceBindingDataImpl.RestMTServiceBinding;
 import com.ibm.g11n.pipeline.client.impl.ResourceEntryDataImpl.RestResourceEntry;
+import com.ibm.g11n.pipeline.client.impl.SegmentDataImpl.RestSegmentData;
 import com.ibm.g11n.pipeline.client.impl.ServiceInfoImpl.ExternalServiceInfoImpl.RestExternalServiceInfo;
 import com.ibm.g11n.pipeline.client.impl.ServiceInstanceInfoImpl.RestServiceInstanceInfo;
 import com.ibm.g11n.pipeline.client.impl.ServiceResponse.Status;
@@ -584,7 +591,7 @@ public class ServiceClientImpl extends ServiceClient {
     //
 
     private static class GetDocumentListResponse extends ServiceResponse {
-        Set<RestDocument> documentMetaDataSet;
+        Set<RestDocument> documentDataSet;
     }
     
     @Override
@@ -600,8 +607,8 @@ public class ServiceClientImpl extends ServiceClient {
         }
 
         Set<String> result = new TreeSet<>();
-        if (resp.documentMetaDataSet != null) {
-            for (RestDocument doc : resp.documentMetaDataSet) {
+        if (resp.documentDataSet != null) {
+            for (RestDocument doc : resp.documentDataSet) {
                 result.add(doc.getDocumentId());
             }
         }
@@ -1770,5 +1777,404 @@ public class ServiceClientImpl extends ServiceClient {
 
     private static String escapePathSegment(String pathSegment) {
         return UrlEscapers.urlPathSegmentEscaper().escape(pathSegment);
+    }
+
+    //Document Translation Request APIs
+    
+    private static class GetDocumentTranslationRequestsResponse extends ServiceResponse {
+        Map<String, RestDocumentTranslationRequest> translationRequests;
+    }
+
+    /* (non-Javadoc)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#getDocumentTranslationRequests()
+     */
+    @Override
+    public Map<String, DocumentTranslationRequestData> getDocumentTranslationRequests()
+            throws ServiceException {
+
+        GetDocumentTranslationRequestsResponse resp = invokeApiJson(
+                "GET",
+                escapePathSegment(account.getInstanceId()) + "/v2/doc-trs",
+                null,
+                GetDocumentTranslationRequestsResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+
+        Map<String, DocumentTranslationRequestData> resultTRs = new TreeMap<>();
+        for (Entry<String, RestDocumentTranslationRequest> trEntry : resp.translationRequests.entrySet()) {
+            String id = trEntry.getKey();
+            RestDocumentTranslationRequest tr = trEntry.getValue();
+            resultTRs.put(id, new DocumentTranslationRequestDataImpl(id, tr));
+        }
+
+        return resultTRs;
+    
+    }
+    
+    private static class DocumentTranslationRequestResponse extends ServiceResponse {
+        String id;
+        RestDocumentTranslationRequest translationRequest;
+    }
+
+    /* (non-Javadoc)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#getDocumentTranslationRequest(java.lang.String)
+     */
+    @Override
+    public DocumentTranslationRequestData getDocumentTranslationRequest(
+            String trId) throws ServiceException {
+        if (trId == null || trId.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty trId must be specified.");
+        }
+
+        DocumentTranslationRequestResponse resp = invokeApiJson(
+                "GET",
+                escapePathSegment(account.getInstanceId()) + "/v2/doc-trs/"
+                    + escapePathSegment(trId),
+                null,
+                DocumentTranslationRequestResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+
+        return new DocumentTranslationRequestDataImpl(resp.id, resp.translationRequest);
+    
+    }
+
+
+    /* (non-Javadoc)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#createDocumentTranslationRequest(com.ibm.g11n.pipeline.client.NewDocumentTranslationRequestData)
+     */
+    @Override
+    public DocumentTranslationRequestData createDocumentTranslationRequest(
+            NewDocumentTranslationRequestData newTranslationRequestData)
+            throws ServiceException {
+        if (newTranslationRequestData == null) {
+            throw new IllegalArgumentException("Non-empty newTranslationRequestData must be specified.");
+        }
+
+        RestInputDocumentTranslationRequestData newRestTRData = new RestInputDocumentTranslationRequestData(newTranslationRequestData);
+        Gson gson = createGson(RestInputDocumentTranslationRequestData.class.getName());
+        String jsonBody = gson.toJson(newRestTRData, RestInputDocumentTranslationRequestData.class);
+        DocumentTranslationRequestResponse resp = invokeApiJson(
+                "POST",
+                escapePathSegment(account.getInstanceId()) + "/v2/doc-trs/new",
+                jsonBody,
+                DocumentTranslationRequestResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+
+        return new DocumentTranslationRequestDataImpl(resp.id, resp.translationRequest);
+    
+    }
+
+
+    /* (non-Javadoc)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#updateDocumentTranslationRequest(java.lang.String, com.ibm.g11n.pipeline.client.DocumentTranslationRequestDataChangeSet)
+     */
+    @Override
+    public DocumentTranslationRequestData updateDocumentTranslationRequest(
+            String trId, DocumentTranslationRequestDataChangeSet changeSet)
+            throws ServiceException {
+        if (trId == null || trId.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty trId must be specified.");
+        }
+        if (changeSet == null) {
+            throw new IllegalArgumentException("Non-null changeSet must be specified.");
+        }
+
+        RestInputDocumentTranslationRequestData restChangeSet = new RestInputDocumentTranslationRequestData(changeSet);
+        Gson gson = createGson(RestInputDocumentTranslationRequestData.class.getName());
+        String jsonBody = gson.toJson(restChangeSet, RestInputDocumentTranslationRequestData.class);
+        DocumentTranslationRequestResponse resp = invokeApiJson(
+                "POST",
+                escapePathSegment(account.getInstanceId()) + "/v2/doc-trs/"
+                        + escapePathSegment(trId),
+                jsonBody,
+                DocumentTranslationRequestResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+
+        return new DocumentTranslationRequestDataImpl(resp.id, resp.translationRequest);
+    }
+
+
+    /* (non-Javadoc)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#deleteDocumentTranslationRequest(java.lang.String)
+     */
+    @Override
+    public void deleteDocumentTranslationRequest(String trId)
+            throws ServiceException {
+        ServiceResponse resp = invokeApiJson(
+                "DELETE",
+                escapePathSegment(account.getInstanceId()) + "/v2/doc-trs/"
+                    + trId,
+                null,
+                ServiceResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+        
+    }
+
+
+    /* (non-Javadoc)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#getTRDocumentInfo(java.lang.String, com.ibm.g11n.pipeline.client.DocumentType, java.lang.String)
+     */
+    @Override
+    public DocumentData getTRDocumentInfo(String trId, DocumentType type, String documentId) throws ServiceException {
+        if (trId == null || trId.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty trId must be specified.");
+        }
+        if (documentId == null || documentId.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty documentId must be specified.");
+        }
+
+        GetDocumentInfoResponse resp = invokeApiJson(
+                "GET",
+                escapePathSegment(account.getInstanceId()) + "/v2/doc-trs/"
+                    + escapePathSegment(trId) + "/" + type.toString().toLowerCase() + "/" + escapePathSegment(documentId),
+                null,
+                GetDocumentInfoResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+
+        return new DocumentDataImpl(resp.documentData);
+    }
+
+    private static class GetSegmentsResponse extends ServiceResponse {
+        Map<String, RestSegmentData> segments;
+    }
+
+    /* (non-Javadoc)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#getTRSegments(java.lang.String, com.ibm.g11n.pipeline.client.DocumentType, java.lang.String, java.lang.String)
+     */
+    @Override
+    public Map<String, SegmentData> getTRSegments(String trId,
+        DocumentType type, String documentId, String language)
+            throws ServiceException {
+        if (trId == null || trId.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty trId must be specified.");
+        }
+        if (documentId == null || documentId.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty documentId must be specified.");
+        }
+        if (language == null || language.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty languageId must be specified.");
+        }
+
+        GetSegmentsResponse resp = invokeApiJson(
+                "GET",
+                escapePathSegment(account.getInstanceId()) + "/v2/doc-trs/"
+                    + escapePathSegment(trId) + "/" + type.toString().toLowerCase() + "/"
+                    + escapePathSegment(documentId) + "/" + language,
+                null,
+                GetSegmentsResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+
+        Map<String, SegmentData> resultEntries = new TreeMap<String, SegmentData>();
+        if (resp.segments != null && !resp.segments.isEmpty()) {
+            for (Entry<String, RestSegmentData> entry : resp.segments.entrySet()) {
+                resultEntries.put(entry.getKey(),
+                        new SegmentDataImpl(entry.getValue()));
+            }
+        }
+        return resultEntries;
+    }
+    
+    private static class GetSegmentResponse extends ServiceResponse {
+        RestSegmentData segmentData;
+    }
+
+    /* (non-Javadoc)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#getTRSegment(java.lang.String, com.ibm.g11n.pipeline.client.DocumentType, java.lang.String, java.lang.String, java.lang.String)
+     */
+    @Override
+    public SegmentData getTRSegment(String trId, DocumentType type, String documentId,
+             String language, String segmentKey)
+            throws ServiceException {
+        if (trId == null || trId.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty trId must be specified.");
+        }
+        if (documentId == null || documentId.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty documentId must be specified.");
+        }
+        if (language == null || language.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty language must be specified.");
+        }
+        if (segmentKey == null || segmentKey.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty segmentKey must be specified.");
+        }
+
+        GetSegmentResponse resp = invokeApiJson(
+                "GET",
+                escapePathSegment(account.getInstanceId()) + "/v2/doc-trs/" + escapePathSegment(trId) + 
+                    "/" + type.toString().toLowerCase() + "/"
+                    + escapePathSegment(documentId) + "/" + language
+                    + "/" + escapePathSegment(segmentKey),
+                null,
+                GetSegmentResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+
+        return new SegmentDataImpl(resp.segmentData);
+    
+    }
+    
+    /* (non-Javadoc)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#getXliffFromDocuments(java.lang.String, java.lang.String, java.util.Map, java.io.OutputStream)
+     */
+    @Override
+    public void getXliffFromDocuments(String srcLanguage, String trgLanguage,
+            Map<DocumentType, Set<String>> documentsMap,
+            OutputStream outputXliff) throws ServiceException, IOException {
+
+        if (srcLanguage == null || srcLanguage.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty srcLanguage must be specified.");
+        }
+        if (trgLanguage == null || trgLanguage.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty trgLanguage must be specified.");
+        }
+
+        StringBuilder urlBuf = new StringBuilder();
+        urlBuf
+            .append(escapePathSegment(account.getInstanceId()))
+            .append("/v2/doc-xliff/")
+            .append(srcLanguage)
+            .append("/")
+            .append(trgLanguage);
+
+        if (documentsMap != null && !documentsMap.isEmpty()) {
+            urlBuf.append("?");
+            int count = documentsMap.size();
+            for (Map.Entry<DocumentType, Set<String>> entry : documentsMap.entrySet()) {
+                DocumentType type = entry.getKey();
+                Set<String> documentIds = entry.getValue();
+                urlBuf.append(type.toString().toLowerCase()).append("=");
+                boolean first = true;
+                for (String docId : documentIds) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        urlBuf.append(",");
+                    }
+                    urlBuf.append(docId);
+                }
+                count--;
+            }
+            if (count != 0) {
+                urlBuf.append("&");
+            }
+        }
+
+        ApiResponse resp = null;
+        try {
+            resp = invokeApi("GET", urlBuf.toString(), null, null, false);
+        } catch (Exception e) {
+            String errMsg = "Error while processing API request GET " + urlBuf;
+            throw new ServiceException(errMsg, e);
+        }
+        assert resp != null;
+
+        if (resp.contentType == null || !resp.contentType.equalsIgnoreCase("application/xliff+xml")) {
+            throw new ServiceException("Received HTTP status: " + resp.status
+                    + " with non-XLIFF response (" + resp.contentType + ") from GET"
+                    + " " + urlBuf.toString());
+        }
+        assert resp.body != null;
+        outputXliff.write(resp.body);
+    }
+    
+
+    /* (non-Javadoc)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#updateDocumentsWithXliff(java.io.InputStream)
+     */
+    @Override
+    public void updateDocumentsWithXliff(InputStream inputXliff)
+            throws ServiceException, IOException {
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        byte[] buf = new byte[2048];
+        int bytes;
+        while ((bytes = inputXliff.read(buf)) != -1) {
+            baos.write(buf, 0, bytes);
+        }
+        byte[] inputXliffBytes = baos.toByteArray();
+
+        String method = "POST";
+        String apiPath = escapePathSegment(account.getInstanceId())
+                + "/v2/doc-xliff";
+
+        ApiResponse resp = null;
+        try {
+            resp = invokeApi(method, apiPath, "application/xliff+xml", inputXliffBytes, false);
+        } catch (Exception e) {
+            String errMsg = "Error while processing API request " + method + " " + apiPath;
+            throw new ServiceException(errMsg, e);
+        }
+        if (resp.status >= 300) {
+            String bodyStr = resp.body != null ? new String(resp.body, StandardCharsets.UTF_8) : null;
+            throw new ServiceException("Received HTTP status: " + resp.status + " from " + method
+                    + " " + apiPath + ", body: " + bodyStr);
+        }
+    }
+
+
+    /* (non-Javadoc)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#getXliffFromDocumentTranslationRequest(java.lang.String, java.lang.String, java.lang.String, java.io.OutputStream)
+     */
+    @Override
+    public void getXliffFromDocumentTranslationRequest(String trId,
+            String srcLanguage, String trgLanguage, OutputStream outputXliff)
+            throws ServiceException, IOException {
+        if (trId == null || trId.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty trId must be specified.");
+        }
+        if (srcLanguage == null || srcLanguage.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty srcLanguage must be specified.");
+        }
+        if (trgLanguage == null || trgLanguage.isEmpty()) {
+            throw new IllegalArgumentException("Non-empty trgLanguage must be specified.");
+        }
+
+        StringBuilder urlBuf = new StringBuilder();
+        urlBuf
+            .append(escapePathSegment(account.getInstanceId()))
+            .append("/v2/doc-xliff/trs/")
+            .append(trId)
+            .append("/")
+            .append(srcLanguage)
+            .append("/")
+            .append(trgLanguage);
+
+        ApiResponse resp = null;
+        try {
+            resp = invokeApi("GET", urlBuf.toString(), null, null, false);
+        } catch (Exception e) {
+            String errMsg = "Error while processing API request GET " + urlBuf;
+            throw new ServiceException(errMsg, e);
+        }
+        assert resp != null;
+
+        if (resp.contentType == null || !resp.contentType.equalsIgnoreCase("application/xliff+xml")) {
+            throw new ServiceException("Received HTTP status: " + resp.status
+                    + " with non-XLIFF response (" + resp.contentType + ") from GET"
+                    + " " + urlBuf.toString());
+        }
+        assert resp.body != null;
+        outputXliff.write(resp.body);
     }
 }
