@@ -24,9 +24,19 @@ public enum DocumentType {
     /**
      * HTML Document.
      */
-    HTML,
+    HTML("text/html"),
     /**
      * Markdown Document.
      */
-    MD
+    MD("text/markdown");
+
+    private String mediaType;
+
+    DocumentType(String mediaType) {
+        this.mediaType = mediaType;
+    }
+
+    public String getMediaType() {
+        return mediaType;
+    }
 }

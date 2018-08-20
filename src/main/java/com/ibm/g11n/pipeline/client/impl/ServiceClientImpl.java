@@ -760,7 +760,7 @@ public class ServiceClientImpl extends ServiceClient {
                         + type.toString().toLowerCase() + "/"
                         + documentId + "/"
                         + language,
-                type == DocumentType.HTML ? "text/html" : "text/plain",
+                type.getMediaType(),
                 fis,
                 ServiceResponse.class,
                 false);
