@@ -26,11 +26,13 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 
 import org.junit.Test;
@@ -59,6 +61,10 @@ public class ServiceClientDocumentTRTest extends AbstractServiceClientDocumentTe
 
         createDocumentWithContent(trTestHtmlDocumentId, DocumentType.HTML, srcLang, "fr,de", null, htmlFile);
         createDocumentWithContent(trTestMdDocumentId, DocumentType.MD, srcLang, "fr,de", null, mdFile);
+
+        // Check metrics
+        checkDocMetrics(DocumentType.HTML, trTestHtmlDocumentId, srcLang);
+        checkDocMetrics(DocumentType.MD, trTestMdDocumentId, srcLang);
 
         // Creates a new translation request
         final String trTrgLang = "fr";
@@ -253,7 +259,7 @@ public class ServiceClientDocumentTRTest extends AbstractServiceClientDocumentTe
             fail("IOException: " + e.getMessage());
         }
 
-        // Delete bundle
+        // Delete document
         client.deleteDocumentTranslationRequest(trId);
 
         // Make sure the TR was deleted
@@ -261,5 +267,36 @@ public class ServiceClientDocumentTRTest extends AbstractServiceClientDocumentTe
         assertFalse("TR(del):" + trId, trs.containsKey(trId));
 
         cleanupDocuments();
+    }
+
+    private void checkDocMetrics(DocumentType type, String docId, String srcLang) throws ServiceException {
+        DocumentMetrics metrics = client.getDocumentMetrics(type, docId);
+
+        Map<String, EnumMap<TranslationStatus, Integer>> trstsMap = metrics.getTranslationStatusMetricsByLanguage();
+        EnumMap<TranslationStatus, Integer> srcTrsts = trstsMap.get(srcLang);
+        assertNotNull("Source translation status map for " + docId, srcTrsts);
+        int srcSegCount = 0;
+        for (Integer count : srcTrsts.values()) {
+            srcSegCount += count.intValue();
+        }
+
+        // Make sure total segment counts are same in target languages
+        for (Entry<String, EnumMap<TranslationStatus, Integer>> trstsEntry : trstsMap.entrySet()) {
+            if (trstsEntry.getKey().equals(srcLang)) {
+                continue;
+            }
+            int tgtSegCount = 0;
+            for (Integer count : trstsEntry.getValue().values()) {
+                tgtSegCount += count.intValue();
+            }
+            assertEquals("Translation status segment count for " + docId + " in language " + trstsEntry.getKey(), srcSegCount, tgtSegCount);
+        }
+
+        Map<String, ReviewStatusMetrics> revstsMap = metrics.getReviewStatusMetricsByLanguage();
+        for (Entry<String, ReviewStatusMetrics> revstsEntry : revstsMap.entrySet()) {
+            ReviewStatusMetrics revMetrics = revstsEntry.getValue();
+            assertEquals("Review status segment count for " + docId + " in language " + revstsEntry.getKey(),
+                    srcSegCount, revMetrics.getReviewed() + revMetrics.getNotYetReviewed());
+        }
     }
 }

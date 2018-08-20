@@ -64,6 +64,7 @@ import com.ibm.g11n.pipeline.client.BundleDataChangeSet;
 import com.ibm.g11n.pipeline.client.BundleMetrics;
 import com.ibm.g11n.pipeline.client.DocumentData;
 import com.ibm.g11n.pipeline.client.DocumentDataChangeSet;
+import com.ibm.g11n.pipeline.client.DocumentMetrics;
 import com.ibm.g11n.pipeline.client.DocumentTranslationRequestData;
 import com.ibm.g11n.pipeline.client.DocumentTranslationRequestDataChangeSet;
 import com.ibm.g11n.pipeline.client.DocumentType;
@@ -661,7 +662,35 @@ public class ServiceClientImpl extends ServiceClient {
 
         return new DocumentDataImpl(resp.documentData);
     }
-    
+
+    private static class GetDocumentMetricsResponse extends ServiceResponse {
+        private Map<String, EnumMap<TranslationStatus, Integer>> translationStatusMetricsByLanguage;
+        private Map<String, ReviewStatusMetrics> reviewStatusMetricsByLanguage;
+    }
+
+    @Override
+    public DocumentMetrics getDocumentMetrics(DocumentType type, String documentId) throws ServiceException {
+        if (Strings.isNullOrEmpty(documentId)) {
+            throw new IllegalArgumentException("documentId must be specified.");
+        }
+
+        GetDocumentMetricsResponse resp = invokeApiJson(
+                "GET",
+                escapePathSegment(account.getInstanceId()) + "/v2/documents/"
+                    + type.toString().toLowerCase() + "/"
+                    + escapePathSegment(documentId),
+                null,
+                GetDocumentMetricsResponse.class);
+
+        if (resp.getStatus() == Status.ERROR) {
+            throw new ServiceException(resp.getMessage());
+        }
+
+        return new DocumentMetricsImpl(
+                resp.translationStatusMetricsByLanguage,
+                resp.reviewStatusMetricsByLanguage);
+    }
+
     @Override
     public void updateDocument(DocumentType type, String documentId, DocumentDataChangeSet changeSet)
             throws ServiceException {
@@ -731,7 +760,7 @@ public class ServiceClientImpl extends ServiceClient {
                         + type.toString().toLowerCase() + "/"
                         + documentId + "/"
                         + language,
-                type == DocumentType.HTML ? "text/html" : "text/plain",
+                type.getMediaType(),
                 fis,
                 ServiceResponse.class,
                 false);

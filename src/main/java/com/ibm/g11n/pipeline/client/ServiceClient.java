@@ -491,7 +491,21 @@ public abstract class ServiceClient {
      * @throws ServiceException when the operation failed.
      */
     public abstract DocumentData getDocumentInfo(DocumentType type, String documentId) throws ServiceException;
-    
+
+    /**
+     * Returns the document's metrics information.
+     * <p>
+     * This operation is only allowed to {@link UserType#ADMINISTRATOR ADMINISTRATOR}
+     * and {@link UserType#TRANSLATOR TRANSLATOR} of the service instance.
+     * 
+     * @param type  The type of document being requested.
+     * @param documentId  The document ID. Must not be null or empty.
+     * @return          The document's metrics information.
+     * @throws ServiceException when the operation failed.
+     * @see LanguageMetrics
+     */
+    public abstract DocumentMetrics getDocumentMetrics(DocumentType type, String documentId) throws ServiceException;
+
     /**
      * Updates the document's configuration.
      * <p>
