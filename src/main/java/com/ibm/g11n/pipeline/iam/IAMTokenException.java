@@ -1,4 +1,4 @@
-/*  
+/*
  * Copyright IBM Corp. 2019
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -22,11 +22,11 @@ package com.ibm.g11n.pipeline.iam;
 public class IAMTokenException extends Exception {
     private static final long serialVersionUID = -471266146999367657L;
 
-    public IAMTokenException(String message, Throwable cause) {
+    public IAMTokenException(final String message, final Throwable cause) {
         super(message, cause);
     }
-    
-    public IAMTokenException(String message) {
+
+    public IAMTokenException(final String message) {
         super(message);
     }
 }

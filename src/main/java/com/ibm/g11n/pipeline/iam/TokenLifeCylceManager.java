@@ -1,4 +1,4 @@
-/*  
+/*
  * Copyright IBM Corp. 2019
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -60,8 +60,8 @@ public class TokenLifeCylceManager implements TokenManager {
     private volatile long expiresAt;
     private final String iamApiKey;
     static final String IAM_TOKEN_EXPIRY_THRESHOLD_PROP_KEY="IAM_TOKEN_EXPIRY_THRESHOLD";
-    
-    private TokenLifeCylceManager(String iamEndpoint,String apiKey) {
+
+    private TokenLifeCylceManager(final String iamEndpoint,final String apiKey) {
         if(iamEndpoint==null||iamEndpoint.isEmpty()) {
             throw new IllegalArgumentException("Cannot initialize with null or empty IAM endpoint.");
         }
@@ -78,14 +78,14 @@ public class TokenLifeCylceManager implements TokenManager {
         else {
             throw new IllegalArgumentException("IAM_TOKEN_EXPIRY_THRESHOLD can be set between 0.1(excluding) and 1(excluding");
         }
-        
+
     }
-    
-    
+
+
     /**
      * Logic for getting token:<br>
      * 1. If has a valid token stored, send it.<br>
-     * 2. If the stored token has expired, replace it with a new fetched token.<br> 
+     * 2. If the stored token has expired, replace it with a new fetched token.<br>
      * Note: This method is thread-safe and makes only one call to IAM API to replace an expired IAM token.
      */
     @Override
@@ -94,12 +94,12 @@ public class TokenLifeCylceManager implements TokenManager {
             synchronized (this) {
                 if (hasTokenExpired()) {
                     try {
-                        IAMToken iamToken = invokeTokenApi();
+                        final IAMToken iamToken = invokeTokenApi();
                         expiresAt = (long) (TimeUnit.SECONDS.toNanos(
                                 iamToken.expires_in) * tokenExpiryThreshold)
                                 + System.nanoTime();
                         token = iamToken.access_token;
-                    } catch (IAMTokenException e) {
+                    } catch (final IAMTokenException e) {
                         throw new TokenManagerException("Failed getting Token.",
                                 e);
                     }
@@ -111,7 +111,7 @@ public class TokenLifeCylceManager implements TokenManager {
     }
 
     private boolean hasTokenExpired() {
-       return expiresAt-System.nanoTime()<0;
+        return expiresAt-System.nanoTime()<0;
     }
 
     private IAMToken invokeTokenApi() throws IAMTokenException {
@@ -132,19 +132,19 @@ public class TokenLifeCylceManager implements TokenManager {
                                 + conn.getContentType() + ", body:"
                                 + getResponseBody(conn));
             }
-        } catch (Exception e) {
+        } catch (final Exception e) {
             throw new IAMTokenException(
                     "Could not complete fetching token from token API:"
                             + iamTokenApiUrl,
-                    e);
+                            e);
         }
     }
-    
-    private HttpURLConnection generateRequest(byte[] reqBody) throws IOException {
-        URL targetUrl = new URL(iamTokenApiUrl);
-        HttpURLConnection conn = (HttpURLConnection)targetUrl.openConnection();
+
+    private HttpURLConnection generateRequest(final byte[] reqBody) throws IOException {
+        final URL targetUrl = new URL(iamTokenApiUrl);
+        final HttpURLConnection conn = (HttpURLConnection)targetUrl.openConnection();
         conn.setRequestMethod("POST");
-        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded"); 
+        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
         conn.setRequestProperty("charset", "utf-8");
         conn.setDoOutput(true);
         conn.setUseCaches(false);
@@ -152,22 +152,22 @@ public class TokenLifeCylceManager implements TokenManager {
         return conn;
     }
 
-    
-    private String getResponseBody(HttpURLConnection conn) throws IOException {
+
+    private String getResponseBody(final HttpURLConnection conn) throws IOException {
         int bodyLen = conn.getContentLength();
         if (bodyLen < 0) {
             bodyLen = 2048; // default length for initial byte array
         }
-        ByteArrayOutputStream baos = new ByteArrayOutputStream(bodyLen);
+        final ByteArrayOutputStream baos = new ByteArrayOutputStream(bodyLen);
         try(InputStream is = conn.getErrorStream()==null?conn.getInputStream():conn.getErrorStream()){
-            byte[] buf = new byte[2048];
+            final byte[] buf = new byte[2048];
             int bytes;
             while ((bytes = is.read(buf)) != -1) {
                 baos.write(buf, 0, bytes);
             }
             return baos.toString(StandardCharsets.UTF_8.name());
         }
-        
+
     }
 
     /**
@@ -181,8 +181,8 @@ public class TokenLifeCylceManager implements TokenManager {
      *            IAM API Key.
      * @return Instance of TokenLifeCylceManager
      */
-    static TokenLifeCylceManager getInstance(String iamEndpoint,
-            String apiKey) {
+    static TokenLifeCylceManager getInstance(final String iamEndpoint,
+            final String apiKey) {
         if (iamEndpoint == null || iamEndpoint.isEmpty()) {
             throw new IllegalArgumentException(
                     "Cannot initialize with null or empty IAM endpoint.");
@@ -194,9 +194,9 @@ public class TokenLifeCylceManager implements TokenManager {
         return getInstanceUnchecked(iamEndpoint, apiKey);
     }
 
-    
+
     private static TokenLifeCylceManager getInstanceUnchecked(
-            String iamEndpoint, String apiKey) {
+            final String iamEndpoint, final String apiKey) {
         final String storeKey = iamEndpoint + apiKey;
         if (!instances.containsKey(storeKey)) {
             instances.putIfAbsent(storeKey,
@@ -212,15 +212,15 @@ public class TokenLifeCylceManager implements TokenManager {
      * 
      * @param jsonCredentials
      *            Credentials in JSON format. The credentials should at minimum
-     *            have these <key>:<value> pairs in the credentials json: 
-     *            { 
+     *            have these <key>:<value> pairs in the credentials json:
+     *            {
      *              "apikey":"<IAM_API_KEY>",
-     *              "iam_endpoint":"<IAM_ENDPOINT>" 
+     *              "iam_endpoint":"<IAM_ENDPOINT>"
      *            }
      * @return Instance of TokenLifeCylceManager.
      */
-    static TokenLifeCylceManager getInstance(String jsonCredentials) {
-        JsonObject credentials = new JsonParser().parse(jsonCredentials)
+    static TokenLifeCylceManager getInstance(final String jsonCredentials) {
+        final JsonObject credentials = new JsonParser().parse(jsonCredentials)
                 .getAsJsonObject();
         if(credentials.get("apikey")==null || credentials.get("apikey").isJsonNull()||credentials.get("apikey").getAsString().isEmpty()) {
             throw new IllegalArgumentException(
@@ -230,14 +230,14 @@ public class TokenLifeCylceManager implements TokenManager {
             throw new IllegalArgumentException(
                     "IAM endpoint Key value is either not available, or null or is empty in credentials JSON.");
         }
-        String apiKey = credentials.get("apikey").getAsString();
-        String iamEndpoint = credentials.get("iam_endpoint").getAsString();
+        final String apiKey = credentials.get("apikey").getAsString();
+        final String iamEndpoint = credentials.get("iam_endpoint").getAsString();
 
         return getInstanceUnchecked(iamEndpoint, apiKey);
     }
-    
+
     private byte[] generateRequestBody() throws UnsupportedEncodingException {
-        StringBuilder builder=new StringBuilder();
+        final StringBuilder builder=new StringBuilder();
         builder.append(URLEncoder.encode("grant_type","UTF-8")).append("=").append(URLEncoder.encode("urn:ibm:params:oauth:grant-type:apikey","UTF-8"))
         .append("&")
         .append(URLEncoder.encode("response_type","UTF-8")).append("=").append(URLEncoder.encode("cloud_iam", "UTF-8"))
@@ -245,4 +245,4 @@ public class TokenLifeCylceManager implements TokenManager {
         .append(URLEncoder.encode("apikey","UTF-8")).append("=").append(URLEncoder.encode(iamApiKey, "UTF-8"));
         return builder.toString().getBytes(StandardCharsets.UTF_8);
     }
-}   
+}

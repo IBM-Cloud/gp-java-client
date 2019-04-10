@@ -1,4 +1,4 @@
-/*  
+/*
  * Copyright IBM Corp. 2019
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -18,12 +18,12 @@ package com.ibm.g11n.pipeline.iam;
 /**
  * The base class of TokenManager exceptions.
  * @author Siddharth Jain
- *  
+ * 
  */
 public class TokenManagerException extends Exception{
     private static final long serialVersionUID = 5461493071541973585L;
 
-    TokenManagerException(String message,Throwable ex){
+    TokenManagerException(final String message,final Throwable ex){
         super(message,ex);
     }
 }

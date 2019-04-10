@@ -1,4 +1,4 @@
-/*  
+/*
  * Copyright IBM Corp. 2019
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -16,7 +16,7 @@
 package com.ibm.g11n.pipeline.iam;
 
 /**
- * TokenManager facilitates retrieving IAM token. 
+ * TokenManager facilitates retrieving IAM token.
  * @author Siddharth Jain
  *
  */

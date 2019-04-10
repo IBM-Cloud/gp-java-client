@@ -1,4 +1,4 @@
-/*  
+/*
  * Copyright IBM Corp. 2019
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -25,16 +25,16 @@ package com.ibm.g11n.pipeline.iam;
  */
 public class SimpleTokenManager implements TokenManager {
     final String token;
-    SimpleTokenManager(String token){
+    SimpleTokenManager(final String token){
         if(token==null||token.isEmpty()) {
             throw new IllegalArgumentException("Cannot initialize with null or empty token");
         }
         this.token=token;
     }
-    
+
     @Override
     public String getToken() {
-       return token;
+        return token;
     }
-    
+
 }

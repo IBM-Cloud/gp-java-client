@@ -1,4 +1,4 @@
-/*  
+/*
  * Copyright IBM Corp. 2019
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -21,16 +21,16 @@ package com.ibm.g11n.pipeline.iam;
  *
  */
 public class TokenManagerFactory {
-    
-    public static TokenManager getTokenManager(String token) {
+
+    public static TokenManager getTokenManager(final String token) {
         return new SimpleTokenManager(token);
     }
-    
-    public static TokenManager getTokenLifeCycleManager(String iamTokenApiUrl,String apiKey) {
+
+    public static TokenManager getTokenLifeCycleManager(final String iamTokenApiUrl,final String apiKey) {
         return TokenLifeCylceManager.getInstance(iamTokenApiUrl, apiKey);
     }
-    
-    public static TokenManager getTokenLifeCycleManager(String jsonCredentials) {
+
+    public static TokenManager getTokenLifeCycleManager(final String jsonCredentials) {
         return TokenLifeCylceManager.getInstance(jsonCredentials);
     }
 }
