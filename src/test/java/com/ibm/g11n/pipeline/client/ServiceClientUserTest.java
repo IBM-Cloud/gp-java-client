@@ -20,6 +20,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assume.assumeFalse;
 
 import java.util.Collections;
 import java.util.Map;
@@ -98,6 +99,7 @@ public class ServiceClientUserTest extends AbstractServiceClientTest {
 
     @Test
     public void getUsers_Initial_ShouldContainThisUser() throws ServiceException {
+        assumeFalse(account.isIamEnabled());
         String userId = account.getUserId();
         Map<String, UserData> users = client.getUsers();
         UserData user = users.get(userId);
@@ -333,16 +335,6 @@ public class ServiceClientUserTest extends AbstractServiceClientTest {
         userChanges.setDisplayName("new display name");
         expectedException.expect(ServiceException.class);
         client.updateUser("$$$", userChanges, false);
-    }
-
-    //
-    // deleteUser
-    //
-
-    @Test
-    public void deleteUser_NonExisting_ShouldFail() throws ServiceException {
-        expectedException.expect(ServiceException.class);
-        client.deleteUser("$$$");
     }
 
 

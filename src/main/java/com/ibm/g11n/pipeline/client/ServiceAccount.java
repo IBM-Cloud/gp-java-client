@@ -28,6 +28,9 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
 import com.ibm.g11n.pipeline.client.rb.CloudResourceBundleControl;
+import com.ibm.g11n.pipeline.iam.TokenManager;
+import com.ibm.g11n.pipeline.iam.TokenManagerException;
+import com.ibm.g11n.pipeline.iam.TokenManagerFactory;
 
 /**
  * <code>ServiceAccount</code> is a class representing IBM Globalization Pipeline
@@ -77,6 +80,22 @@ public class ServiceAccount {
      * The environment variable name for specifying a password.
      */
     public static final String GP_PASSWORD = "GP_PASSWORD";
+    
+    /**
+     * The environment variable name for specifying a IAM API Key.
+     */
+    public static final String GP_IAM_API_KEY = "GP_IAM_API_KEY";
+    
+    /**
+     * The environment variable name for specifying a IAM bearer token.
+     */
+    public static final String GP_IAM_BEARER_TOKEN = "GP_IAM_BEARER_TOKEN";
+    
+    /**
+     * The environment variable name for specifying IAM endpoint.
+     */
+    public static final String GP_IAM_ENDPOINT = "GP_IAM_ENDPOINT";
+
 
     /**
      * The environment variable name for specifying a service name used
@@ -106,6 +125,8 @@ public class ServiceAccount {
     private String instanceId;
     private String userId;
     private String password;
+    private TokenManager tokenManager;
+
 
     /**
      * Private constructor.
@@ -120,6 +141,22 @@ public class ServiceAccount {
         this.instanceId = Objects.requireNonNull(instanceId, "instanceId must not be null");
         this.userId = Objects.requireNonNull(userId, "userId must not be null");
         this.password = Objects.requireNonNull(password, "password mut not be null");
+    }
+    
+    /**
+     * Private constructor.
+     * 
+     * @param url
+     *            Service URL, no trailing '/'
+     * @param instanceId
+     *            Service instance ID
+     * @param tokenManager
+     *            IAM token manager
+     */
+    private ServiceAccount(String url, String instanceId, TokenManager tokenManager) {
+        this.url = Objects.requireNonNull(url, "url must not be null");
+        this.instanceId = Objects.requireNonNull(instanceId, "instanceId must not be null");
+        this.tokenManager = Objects.requireNonNull(tokenManager, "tokenManager must not be null");
     }
 
     /**
@@ -147,6 +184,34 @@ public class ServiceAccount {
         }
 
         return new ServiceAccount(url, instanceId, userId, password);
+    }
+
+    /**
+     * Returns an instance of ServiceAccount for the specified IBM Globalization
+     * Pipeline service URL and credentials.
+     * <p>
+     * All arguments must no be null.
+     * 
+     * @param url
+     *            The service URL of Globlization Pipeline service. (e.g.
+     *            https://gp-rest.ng.bluemix.net/translate/rest)
+     * @param instanceId
+     *            The instance ID of the service instance. (e.g.
+     *            d3f537cd617f34c86ac6b270f3065e73)
+     * @param tokenManager
+     *            IAM Token Manager.
+     * 
+     * @return An instance of ServiceAccount
+     */
+    public static ServiceAccount getInstance(String url, String instanceId,
+            TokenManager tokenManager) {
+
+        if (url.endsWith("/")) {
+            // trim off trailing slash
+            url = url.substring(0, url.length() - 1);
+        }
+
+        return new ServiceAccount(url, instanceId, tokenManager);
     }
 
     /**
@@ -220,17 +285,80 @@ public class ServiceAccount {
         String instanceId = env.get(GP_INSTANCE_ID);
         String userId = env.get(GP_USER_ID);
         String password = env.get(GP_PASSWORD);
-        if (url == null || instanceId == null || userId == null || password == null) {
-            logger.config("Not enough environment variables to initialize an instance of ServiceAccount.");
+        String apiKey = env.get(GP_IAM_API_KEY);
+        String iamBearerToken=env.get(GP_IAM_BEARER_TOKEN);
+        String iamEndpoint=env.get(GP_IAM_ENDPOINT);
+        
+        return getInstance(url, instanceId, userId, password, apiKey,
+                iamBearerToken, iamEndpoint);
+        
+    }
+
+    /**
+     * @param url           
+     *          The service URL of Globlization Pipeline service.
+     *          (e.g. https://gp-rest.ng.bluemix.net/translate/rest)
+     * @param instanceId    
+     *          The instance ID of the service instance.
+     *          (e.g. d3f537cd617f34c86ac6b270f3065e73)
+     * @param userId        
+     *          The user ID for the service instance.
+     *          (e.g. e92a1282a0e4f97bec93aa9f56fdb838)
+     * @param password      
+     *          The password for the service instance.
+     *          (e.g. zg5SlD+ftXYRIZDblLgEA/ILkkCNqE1y)
+     * @param iamEndpoint
+     *          IAM endpoint.
+     * @param iamBearerToken
+     *          IAM Bearer token.
+     * @param apiKey
+     *          IAM API Key.
+     * @return An instance of ServiceAccount, or null if essential params are not available.
+     */
+     static ServiceAccount getInstance(String url, String instanceId,
+            String userId, String password, String apiKey,
+            String iamBearerToken, String iamEndpoint) {
+        if(url == null || instanceId == null) {
+            logger.config(
+                    "Not enough environment variables to initialize an instance of ServiceAccount with either Globalization Pipeline Authentication or IAM Authorization. Globalization Pipeline URL and instance id are required.");
             return null;
         }
+        if (userId == null || password == null) {
+            logger.config("Not enough environment variables to initialize an instance of ServiceAccount supporting Globalization Pipeline Authentication.");
+        }
+        else {
+            ServiceAccount account = getInstance(url, instanceId, userId, password);
+            logger.config("A ServiceAccount is created from environment variables: GP_URL="
+                    + url + ", GP_INSTANCE_ID=" + instanceId + ", GP_USER_ID=" +
+                    userId + ", GP_PASSWORD=***");
 
-        ServiceAccount account = getInstance(url, instanceId, userId, password);
-        logger.config("A ServiceAccount is created from environment variables: GP_URL="
-                + url + ", GP_INSTANCE_ID=" + instanceId + ", GP_USER_ID=" +
-                userId + ", GP_PASSWORD=***");
+            return account;
+        }
+        if(iamEndpoint==null||iamEndpoint.isEmpty()) {
+            logger.config("Not enough environment variables to initialize an instance of ServiceAccount supporting IAM Authorization. IAM endpoint is either not set or blank.");
+            return null;
+        }
+        if (apiKey==null||apiKey.isEmpty()) {
+            logger.config("Not enough environment variables to initialize an instance of ServiceAccount supporting IAM Authorization using IAM API Key.");
+        }
+        else {
+            ServiceAccount account = getInstance(url, instanceId, TokenManagerFactory.getTokenLifeCycleManager(iamEndpoint, apiKey));
+            logger.config("A ServiceAccount is created from environment variables: GP_URL="
+                    + url + ", GP_INSTANCE_ID=" + instanceId + ", GP_IAM_API_KEY=***");
 
-        return account;
+            return account;
+        }
+        
+        if (iamBearerToken==null||iamBearerToken.isEmpty()) {
+            logger.config("Not enough environment variables to initialize an instance of ServiceAccount supporting IAM Authorization using IAM bearer token.");
+            return null;
+        }
+        else {
+            ServiceAccount account = getInstance(url, instanceId, TokenManagerFactory.getTokenManager(iamBearerToken));
+            logger.config("A ServiceAccount is created from environment variables: GP_URL="
+                    + url + ", GP_INSTANCE_ID=" +instanceId+ ", GP_IAM_BEARER_TOKEN=***");
+            return account;
+        }
     }
 
     /**
@@ -326,20 +454,57 @@ public class ServiceAccount {
             JsonPrimitive jsonInstanceId = credentials.getAsJsonPrimitive("instanceId");
             JsonPrimitive jsonUserId = credentials.getAsJsonPrimitive("userId");
             JsonPrimitive jsonPassword = credentials.getAsJsonPrimitive("password");
+            JsonPrimitive jsonIamEndpoint = credentials.getAsJsonPrimitive("iam_endpoint");
+            JsonPrimitive jsonIamApiKey = credentials.getAsJsonPrimitive("apikey");
 
-            if (jsonUrl != null && jsonInstanceId != null && jsonUserId != null & jsonPassword != null) {
-                account = getInstance(jsonUrl.getAsString(), jsonInstanceId.getAsString(),
-                        jsonUserId.getAsString(), jsonPassword.getAsString());
-                logger.config("A ServiceAccount is created from VCAP_SERVICES: url="
-                        + jsonUrl + ", instanceId=" + jsonInstanceId + ", userId="
-                        + jsonUserId + ", password=***");
-                break;
+
+            if (jsonUrl != null && jsonInstanceId != null) {
+                if (jsonUserId != null && jsonPassword != null) {
+                    account = getInstance(jsonUrl.getAsString(),
+                            jsonInstanceId.getAsString(),
+                            jsonUserId.getAsString(),
+                            jsonPassword.getAsString());
+                    logger.config(
+                            "A ServiceAccount is created from VCAP_SERVICES: url="
+                                    + jsonUrl + ", instanceId=" + jsonInstanceId
+                                    + ", userId=" + jsonUserId
+                                    + ", password=***");
+                    break;
+                } else if (jsonIamEndpoint != null && jsonIamApiKey != null) {
+                    account = getInstance(jsonUrl.getAsString(),
+                            jsonInstanceId.getAsString(),
+                            TokenManagerFactory.getTokenLifeCycleManager(
+                                    jsonIamEndpoint.getAsString(),
+                                    jsonIamApiKey.getAsString()));
+                    logger.config(
+                            "A ServiceAccount is created from VCAP_SERVICES: url="
+                                    + jsonUrl + ", instanceId=" + jsonInstanceId
+                                    + ", iam_endpoint=" + jsonIamEndpoint
+                                    + ", apikey=***");
+                    break;
+                }
             }
         }
 
         return account;
     }
-
+    
+    /**
+     * Is this is an IAM enabled account?
+     * @return true if account is IAM enabled.
+     */
+    public boolean isIamEnabled() {
+        return tokenManager!=null;
+    }
+    
+    /**
+     * IAM bearer token for the account.
+     * @return IAM bearer token for the account
+     */
+    public String getIamToken() throws TokenManagerException  {
+       return tokenManager.getToken();
+    }
+    
     /**
      * Returns the URL of IBM Globalization Pipeline service.
      * 

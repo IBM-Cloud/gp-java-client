@@ -44,6 +44,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
+import com.ibm.g11n.pipeline.iam.TokenManagerException;
+
 /**
  * Test cases for bundle operation APIs in ServiceClient.
  * 
@@ -214,7 +216,7 @@ public class ServiceClientBundleTest extends AbstractServiceClientBundleTest {
 
     @Test
     public void getBundleInfo_UpdatedBy_ShouldMatchThisUser()
-            throws ServiceException {
+            throws ServiceException, TokenManagerException {
         String bundleId = testBundleId("bundle1");
         createBundleWithLanguages(bundleId, "en");
         BundleData bundleData = client.getBundleInfo(bundleId);
@@ -417,13 +419,6 @@ public class ServiceClientBundleTest extends AbstractServiceClientBundleTest {
                 bundleIds.contains(bundleId));
     }
 
-    @Test
-    public void deleteBundle_NonExisting_ShouldFail() throws ServiceException {
-        String bundleId = testBundleId("bundle0");
-        expectedException.expect(ServiceException.class);
-        client.deleteBundle(bundleId);
-    }
-
     private static final String[][] TEST_RES1 = { { "menu.help", "Help" },
         { "menu.file", "File" }, { "menu.edit", "Edit" } };
 
@@ -510,7 +505,7 @@ public class ServiceClientBundleTest extends AbstractServiceClientBundleTest {
 
     @Test
     public void getResourceEntries_SourceLang_ShouldMatch()
-            throws ServiceException, InterruptedException {
+            throws ServiceException, InterruptedException, TokenManagerException {
         String bundleId = testBundleId("bundle1");
         String source = "en";
         createBundleWithLanguages(bundleId, source);
@@ -569,7 +564,7 @@ public class ServiceClientBundleTest extends AbstractServiceClientBundleTest {
         Map<String, String> strings = toStringMap(TEST_RES1);
         client.uploadResourceStrings(bundleId, source, strings);
 
-        Thread.sleep(WAIT_TIME);
+        Thread.sleep(WAIT_TIME*2);
 
         Map<String, ResourceEntryData> targetEntries = client
                 .getResourceEntries(bundleId, target);
@@ -1099,14 +1094,14 @@ public class ServiceClientBundleTest extends AbstractServiceClientBundleTest {
         Map<String, String> strings = toStringMap(TEST_RES1);
         client.uploadResourceStrings(bundleId, source, strings);
 
-        Thread.sleep(WAIT_TIME);
+        Thread.sleep(WAIT_TIME*2);
 
         // update target key not available in source language.
         Map<String, String> changeStrings = toStringMap(
                 new String[][] { { "NewKey", "NewVal" } });
         client.updateResourceStrings(bundleId, target, changeStrings, false);
 
-        Thread.sleep(WAIT_TIME);
+        Thread.sleep(WAIT_TIME*2);
 
         // source strings should not be affected
         Map<String, String> sourceStrings = client.getResourceStrings(bundleId,
@@ -1474,7 +1469,7 @@ public class ServiceClientBundleTest extends AbstractServiceClientBundleTest {
 
     private static void compareSourceResourceEntries(String[][] expectedArray,
             Map<String, ResourceEntryData> actualMap, boolean checkSeq,
-            boolean checkDateRecent) {
+            boolean checkDateRecent) throws TokenManagerException {
 
         assertEquals("numbers of resources are different", expectedArray.length,
                 actualMap.size());
