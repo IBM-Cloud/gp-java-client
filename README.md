@@ -112,7 +112,7 @@ The Globalization Service Authentication specific credentials can be specified b
 * __GP_PASSWORD__: User password (e.g. zg5SlD+ftXYRIZDblLgEA/ILkkCNqE1y)
 
 For IAM authentication, you supply either an IAM service **API key** or a **bearer token**. 
-- Use the API key to have the SDK manage the lifecycle of the access token. The SDK requests an access token, ensures that the access token is valid, and fetches a new one if necessary.
+- Use the API key to have the SDK manage the lifecycle of the access token. The SDK requests an access token, ensures that the access token is valid, and fetches a new one when necessary.
 - Use the access token if you want to manage the lifecycle yourself.
 
 The IAM specific credentials can be specified by following environment variables::
