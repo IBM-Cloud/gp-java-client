@@ -163,7 +163,7 @@ public class ServiceAccount {
      * Returns an instance of ServiceAccount for the specified IBM Globalization
      * Pipeline service URL and credentials.
      * <p>
-     * All arguments must no be null.
+     * All arguments must not be null.
      * 
      * @param url           The service URL of Globlization Pipeline service.
      *                      (e.g. https://gp-rest.ng.bluemix.net/translate/rest)

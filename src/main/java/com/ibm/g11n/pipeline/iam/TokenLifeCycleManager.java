@@ -42,7 +42,7 @@ import com.google.gson.JsonParser;
  * @author Siddharth Jain
  *
  */
-public class TokenLifeCylceManager implements TokenManager {
+public class TokenLifeCycleManager implements TokenManager {
     private static class IAMToken{
         private String access_token;
         private String refresh_token;
@@ -52,7 +52,7 @@ public class TokenLifeCylceManager implements TokenManager {
         private String scope;
     }
     private static final Gson GSON = new Gson();
-    private static final Map<String,TokenLifeCylceManager> instances=new ConcurrentHashMap<>();
+    private static final Map<String,TokenLifeCycleManager> instances=new ConcurrentHashMap<>();
     private double tokenExpiryThreshold=0.85;
     private final String iamTokenApiUrl;
     private volatile String token;
@@ -61,7 +61,7 @@ public class TokenLifeCylceManager implements TokenManager {
     private final String iamApiKey;
     static final String IAM_TOKEN_EXPIRY_THRESHOLD_PROP_KEY="IAM_TOKEN_EXPIRY_THRESHOLD";
 
-    private TokenLifeCylceManager(final String iamEndpoint,final String apiKey) {
+    private TokenLifeCycleManager(final String iamEndpoint,final String apiKey) {
         if(iamEndpoint==null||iamEndpoint.isEmpty()) {
             throw new IllegalArgumentException("Cannot initialize with null or empty IAM endpoint.");
         }
@@ -181,7 +181,7 @@ public class TokenLifeCylceManager implements TokenManager {
      *            IAM API Key.
      * @return Instance of TokenLifeCylceManager
      */
-    static TokenLifeCylceManager getInstance(final String iamEndpoint,
+    static TokenLifeCycleManager getInstance(final String iamEndpoint,
             final String apiKey) {
         if (iamEndpoint == null || iamEndpoint.isEmpty()) {
             throw new IllegalArgumentException(
@@ -195,12 +195,12 @@ public class TokenLifeCylceManager implements TokenManager {
     }
 
 
-    private static TokenLifeCylceManager getInstanceUnchecked(
+    private static TokenLifeCycleManager getInstanceUnchecked(
             final String iamEndpoint, final String apiKey) {
         final String storeKey = iamEndpoint + apiKey;
         if (!instances.containsKey(storeKey)) {
             instances.putIfAbsent(storeKey,
-                    new TokenLifeCylceManager(iamEndpoint, apiKey));
+                    new TokenLifeCycleManager(iamEndpoint, apiKey));
         }
         return instances.get(storeKey);
     }
@@ -219,7 +219,7 @@ public class TokenLifeCylceManager implements TokenManager {
      *            }
      * @return Instance of TokenLifeCylceManager.
      */
-    static TokenLifeCylceManager getInstance(final String jsonCredentials) {
+    static TokenLifeCycleManager getInstance(final String jsonCredentials) {
         final JsonObject credentials = new JsonParser().parse(jsonCredentials)
                 .getAsJsonObject();
         if(credentials.get("apikey")==null || credentials.get("apikey").isJsonNull()||credentials.get("apikey").getAsString().isEmpty()) {

@@ -27,10 +27,10 @@ public class TokenManagerFactory {
     }
 
     public static TokenManager getTokenLifeCycleManager(final String iamTokenApiUrl,final String apiKey) {
-        return TokenLifeCylceManager.getInstance(iamTokenApiUrl, apiKey);
+        return TokenLifeCycleManager.getInstance(iamTokenApiUrl, apiKey);
     }
 
     public static TokenManager getTokenLifeCycleManager(final String jsonCredentials) {
-        return TokenLifeCylceManager.getInstance(jsonCredentials);
+        return TokenLifeCycleManager.getInstance(jsonCredentials);
     }
 }

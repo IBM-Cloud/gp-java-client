@@ -36,7 +36,7 @@ import org.junit.Test;
  * @author Siddharth Jain
  *
  */
-public class TokenLifeCylceManagerTest {
+public class TokenLifeCycleManagerTest {
     static String iamApiEndpoint;
     static String apiKey;
     static String apiKey1;
@@ -58,8 +58,8 @@ public class TokenLifeCylceManagerTest {
     public void testSingleton() {
         assertTrue(
                 "Single instance of TokenLifeCylceManager should be maintained for a unique pair of IAM API endpoint and IAM API key.",
-                TokenLifeCylceManager.getInstance(dummyIamApiEndpoint,
-                        dummyApiKey) == TokenLifeCylceManager
+                TokenLifeCycleManager.getInstance(dummyIamApiEndpoint,
+                        dummyApiKey) == TokenLifeCycleManager
                                 .getInstance(dummyIamApiEndpoint, dummyApiKey));
     }
     
@@ -69,97 +69,97 @@ public class TokenLifeCylceManagerTest {
                 iamApiEndpoint != null && apiKey != null && apiKey1 != null);
         try {
             System.setProperty(
-                    TokenLifeCylceManager.IAM_TOKEN_EXPIRY_THRESHOLD_PROP_KEY,
+                    TokenLifeCycleManager.IAM_TOKEN_EXPIRY_THRESHOLD_PROP_KEY,
                     "0");
-            TokenLifeCylceManager.getInstance(iamApiEndpoint, apiKey1);
+            TokenLifeCycleManager.getInstance(iamApiEndpoint, apiKey1);
             fail("0% is an invalid value for IAM_TOKEN_EXPIRY_THRESHOLD");
         } catch (IllegalArgumentException ex) {
             System.clearProperty(
-                    TokenLifeCylceManager.IAM_TOKEN_EXPIRY_THRESHOLD_PROP_KEY);
+                    TokenLifeCycleManager.IAM_TOKEN_EXPIRY_THRESHOLD_PROP_KEY);
         }
         try {
             System.setProperty(
-                    TokenLifeCylceManager.IAM_TOKEN_EXPIRY_THRESHOLD_PROP_KEY,
+                    TokenLifeCycleManager.IAM_TOKEN_EXPIRY_THRESHOLD_PROP_KEY,
                     "1");
-            TokenLifeCylceManager.getInstance(iamApiEndpoint, apiKey1);
+            TokenLifeCycleManager.getInstance(iamApiEndpoint, apiKey1);
             fail("100% is an invalid value for IAM_TOKEN_EXPIRY_THRESHOLD");
         } catch (IllegalArgumentException ex) {
             System.clearProperty(
-                    TokenLifeCylceManager.IAM_TOKEN_EXPIRY_THRESHOLD_PROP_KEY);
+                    TokenLifeCycleManager.IAM_TOKEN_EXPIRY_THRESHOLD_PROP_KEY);
         }
         try {
             System.setProperty(
-                    TokenLifeCylceManager.IAM_TOKEN_EXPIRY_THRESHOLD_PROP_KEY,
+                    TokenLifeCycleManager.IAM_TOKEN_EXPIRY_THRESHOLD_PROP_KEY,
                     "0.1");
-            TokenLifeCylceManager.getInstance(iamApiEndpoint, apiKey1);
+            TokenLifeCycleManager.getInstance(iamApiEndpoint, apiKey1);
             fail("10% is an invalid value for IAM_TOKEN_EXPIRY_THRESHOLD");
         } catch (IllegalArgumentException ex) {
             System.clearProperty(
-                    TokenLifeCylceManager.IAM_TOKEN_EXPIRY_THRESHOLD_PROP_KEY);
+                    TokenLifeCycleManager.IAM_TOKEN_EXPIRY_THRESHOLD_PROP_KEY);
         }
         System.setProperty(
-                TokenLifeCylceManager.IAM_TOKEN_EXPIRY_THRESHOLD_PROP_KEY,
+                TokenLifeCycleManager.IAM_TOKEN_EXPIRY_THRESHOLD_PROP_KEY,
                 "0.5");
-        TokenLifeCylceManager.getInstance(iamApiEndpoint, apiKey1);
+        TokenLifeCycleManager.getInstance(iamApiEndpoint, apiKey1);
 
     }
     
     @Test(expected=IllegalArgumentException.class)
     public void testEmptyIamApiEndpointJson() {
-        TokenLifeCylceManager.getInstance(
+        TokenLifeCycleManager.getInstance(
                 "{'apikey':'"+dummyApiKey+"','iam_endpoint':''}");
     }
     @Test(expected=IllegalArgumentException.class)
     public void testNullIamApiEndpointJson() {
-        TokenLifeCylceManager.getInstance(
+        TokenLifeCycleManager.getInstance(
                 "{'apikey':'"+dummyApiKey+"','iam_endpoint': null}");
     }
     
     @Test(expected=IllegalArgumentException.class)
     public void testEmptyIamApiKeyJson() {
-        TokenLifeCylceManager.getInstance(
+        TokenLifeCycleManager.getInstance(
                 "{'apikey':'','iam_endpoint':'"+dummyIamApiEndpoint+"'}");
     }
     @Test(expected=IllegalArgumentException.class)
     public void testNullIamApiKeyJson() {
-        TokenLifeCylceManager.getInstance(
+        TokenLifeCycleManager.getInstance(
                 "{'apikey':null,'iam_endpoint':'"+dummyIamApiEndpoint+"'}");
     }
     
     @Test(expected=IllegalArgumentException.class)
     public void testNullIamApiEndpoint() {
-        TokenLifeCylceManager.getInstance(null,dummyApiKey);
+        TokenLifeCycleManager.getInstance(null,dummyApiKey);
     }
     
     @Test(expected=IllegalArgumentException.class)
     public void testEmptyIamApiEndpoint() {
-        TokenLifeCylceManager.getInstance("",dummyApiKey);
+        TokenLifeCycleManager.getInstance("",dummyApiKey);
     }
     
     @Test(expected=IllegalArgumentException.class)
     public void testNullApiKey() {
-        TokenLifeCylceManager.getInstance(dummyIamApiEndpoint,null);
+        TokenLifeCycleManager.getInstance(dummyIamApiEndpoint,null);
     }
     
     @Test(expected=IllegalArgumentException.class)
     public void testEmptyApiKey() {
-        TokenLifeCylceManager.getInstance(dummyIamApiEndpoint,"");
+        TokenLifeCycleManager.getInstance(dummyIamApiEndpoint,"");
     }
     
     @Test(expected=IllegalArgumentException.class)
     public void testNullParams() {
-        TokenLifeCylceManager.getInstance(null,null);
+        TokenLifeCycleManager.getInstance(null,null);
     }
     
     @Test(expected=IllegalArgumentException.class)
     public void testEmptyParams() {
-        TokenLifeCylceManager.getInstance("","");
+        TokenLifeCycleManager.getInstance("","");
     }
     
     @Test
     public void testApiKeySingleCall() throws TokenManagerException {
         assumeTrue("IAM Endpoint and API Key are available",iamApiEndpoint!=null && apiKey!=null);
-        TokenLifeCylceManager manager=TokenLifeCylceManager.getInstance(iamApiEndpoint,
+        TokenLifeCycleManager manager=TokenLifeCycleManager.getInstance(iamApiEndpoint,
                 apiKey) ;
         String token=manager.getToken();
         assertNotNull("IAM token should not be empty.", token);
@@ -169,7 +169,7 @@ public class TokenLifeCylceManagerTest {
     public void testTokenCaching() throws TokenManagerException {
         assumeTrue("IAM Endpoint and API Key are available",iamApiEndpoint!=null && apiKey!=null);
         String token=null;
-        TokenLifeCylceManager manager=TokenLifeCylceManager.getInstance(iamApiEndpoint,
+        TokenLifeCycleManager manager=TokenLifeCycleManager.getInstance(iamApiEndpoint,
                 apiKey) ;
         for(int i=0;i<4;i++) {
             if(token==null) {
@@ -193,7 +193,7 @@ public class TokenLifeCylceManagerTest {
                 @Override
                 public void run() {
                     try {
-                        TokenLifeCylceManager manager=TokenLifeCylceManager.getInstance(iamApiEndpoint,
+                        TokenLifeCycleManager manager=TokenLifeCycleManager.getInstance(iamApiEndpoint,
                                 apiKey) ;
                         barrier.await();
                         for(int i=0;i<10;i++) {
