@@ -99,13 +99,27 @@ please refer
 [Customizing the JRE](https://www.ng.bluemix.net/docs/starters/liberty/index.html#customizingjre)
 
 If the application is not running on Bluemix, then you need to supply credentials used for
-accessing the Globalization Pipeline service instance. The credentials can be specified by
-following environment variables.
+accessing the Globalization Pipeline service instance. The service supports Globalization Service Authentication and Identity and Access Management (IAM) authentication. IAM authentication uses a service API key to get an access token that is passed with the call. 
+
+Irrespective of which you choose the following common credentials can be specified by following environment variables:
 
 * __GP_URL__: Service URL (e.g. https://gp-rest.ng.bluemix.net/translate/rest)
 * __GP_INSTANCE_ID__: Service instance ID (e.g. d3f537cd617f34c86ac6b270f3065e73)
+
+The Globalization Service Authentication specific credentials can be specified by following environment variables:
+
 * __GP_USER_ID__: User ID (e.g. e92a1282a0e4f97bec93aa9f56fdb838)
 * __GP_PASSWORD__: User password (e.g. zg5SlD+ftXYRIZDblLgEA/ILkkCNqE1y)
+
+For IAM authentication, you supply either an IAM service **API key** or a **bearer token**. 
+- Use the API key to have the SDK manage the lifecycle of the access token. The SDK requests an access token, ensures that the access token is valid, and fetches a new one if necessary.
+- Use the access token if you want to manage the lifecycle yourself.
+
+The IAM specific credentials can be specified by following environment variables::
+
+* __GP_IAM_API_KEY__: IAM endpoint (e.g. https://iam.cloud.ibm.com)
+* __GP_IAM_BEARER_TOKEN__: IAM Bearer token
+* __GP_IAM_ENDPOINT__: IAM API Key
 
 Please also refer Java Tutorials article
 [Installing a Custom Resource Bundle as an Extension](https://docs.oracle.com/javase/tutorial/i18n/serviceproviders/resourcebundlecontrolprovider.html)
@@ -141,16 +155,33 @@ CloudResourceBundleControl.getInstance(). For example,
 
     import com.ibm.g11n.pipeline.client.ServiceAccount;
     import com.ibm.g11n.pipeline.client.rb.CloudResourceBundleControl;
+    import com.ibm.g11n.pipeline.iam.TokenManager;
+    import com.ibm.g11n.pipeline.iam.TokenManagerFactory;
+    
     ...
     Locale locale;  // the target language
     ...
-
+    
     ServiceAccount account = ServiceAccount.getInstance(
         "https://gp-rest.ng.bluemix.net/translate/rest", // service URL
         "d3f537cd617f34c86ac6b270f3065e73",              // instance ID
         "e92a1282a0e4f97bec93aa9f56fdb838",              // user ID
         "zg5SlD+ftXYRIZDblLgEA/ILkkCNqE1y");             // user password
-
+    /* For IAM Authentication.
+    //For having SDK manage the lifecycle of the access token 
+    TokenManager tokenManager = TokenManagerFactory.getTokenLifeCycleManager(
+        "https://iam.cloud.ibm.com",                     // IAM endpoint
+        "aADSdd=ejkfs");                                 // IAM API Key
+    
+    //For managing the lifecycle yourself
+    TokenManager tokenManager = TokenManagerFactory.getTokenManager(
+        "djkfjjejfiehfjhfjhfhskjklshkufkhde");           // IAM Bearer Token
+        
+    ServiceAccount account = ServiceAccount getInstance(
+        "https://gp-rest.ng.bluemix.net/translate/rest", // service URL
+        "d3f537cd617f34c86ac6b270f3065e73",              // instance ID
+        tokenManager)
+    */
     // ResourceBundle is created with the custom control
     ResourceBundle rb = ResourceBundle.getBundle("com.ibm.app.MyMessages", locale,
                                                  CloudResourceBundleControl.getInstance(account));
