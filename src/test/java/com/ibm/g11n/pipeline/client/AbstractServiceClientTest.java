@@ -19,10 +19,16 @@ import static org.junit.Assume.assumeTrue;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Properties;
 
 import org.junit.Before;
+
+import com.google.common.io.BaseEncoding;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.ibm.g11n.pipeline.iam.TokenManagerException;
 
 /**
  * ServiceClient test base class.
@@ -52,13 +58,16 @@ public abstract class AbstractServiceClientTest {
         // i.e. an env var wins over a value in the properties file.
         testProps.putAll(System.getenv());
 
-        String url = testProps.getProperty("GP_URL");
-        String instanceId = testProps.getProperty("GP_INSTANCE_ID");
-        String userId = testProps.getProperty("GP_USER_ID");
-        String password = testProps.getProperty("GP_PASSWORD");
+        String url = testProps.getProperty(ServiceAccount.GP_URL);
+        String instanceId = testProps.getProperty(ServiceAccount.GP_INSTANCE_ID);
+        String userId = testProps.getProperty(ServiceAccount.GP_USER_ID);
+        String password = testProps.getProperty(ServiceAccount.GP_PASSWORD);
+        String iamApiKey=testProps.getProperty(ServiceAccount.GP_IAM_API_KEY);
+        String iamBearerToken=testProps.getProperty(ServiceAccount.GP_IAM_BEARER_TOKEN);
+        String iamEndpoint=testProps.getProperty(ServiceAccount.GP_IAM_ENDPOINT);
 
-        if (url != null && instanceId != null && userId != null && password != null) {
-            ServiceAccount tmpAccount = ServiceAccount.getInstance(url, instanceId, userId, password);
+        ServiceAccount tmpAccount = ServiceAccount.getInstance(url, instanceId, userId, password,iamApiKey,iamBearerToken,iamEndpoint);
+        if (tmpAccount!=null) {
             ServiceClient tmpClient = ServiceClient.getInstance(tmpAccount);
 
             // Make sure it is able to access the service, and also measure response time
@@ -90,11 +99,20 @@ public abstract class AbstractServiceClientTest {
         assumeTrue(client != null);
     }
 
-    public static String getUpdatedByValue() {
+    public static String getUpdatedByValue() throws TokenManagerException {
         if (account == null) {
             return null;
         }
-        return "(" + account.getInstanceId() + ")" + account.getUserId();
+        return "(" + account.getInstanceId() + ")" + (account.isIamEnabled()?getIamUser(account.getIamToken()):account.getUserId());
+    }
+    
+    private static String getIamUser(String iamToken) {
+        String[] parts = iamToken.split("\\.");
+        String encoded = parts[1];
+        String jsonString = new String(BaseEncoding.base64().decode(encoded), StandardCharsets.UTF_8);
+        JsonObject token = new JsonParser().parse(jsonString)
+                .getAsJsonObject();        
+        return token.get("iam_id").getAsString();
     }
 
     public static long getUnitTime() {

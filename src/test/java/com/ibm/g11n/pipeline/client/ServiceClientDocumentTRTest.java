@@ -20,6 +20,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -35,6 +36,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 /**
@@ -43,12 +45,17 @@ import org.junit.Test;
  */
 public class ServiceClientDocumentTRTest extends AbstractServiceClientDocumentTest  {
 
+    @BeforeClass
+    public static void setup() {
+        assumeTrue("Doc API testing is enabled","true".equalsIgnoreCase(System.getProperty("DOC_TEST_ENABLED", "false")));
+    }
+    
     // TODO: Test case for submitting a TR without billing
     
     private final String testFolder = "src/test/resources/com/ibm/g11n/pipeline/client";
     private final File htmlFile = new File(testFolder + "/html_doc1.html");
     private final File mdFile = new File(testFolder + "/md_doc1.md");
-
+    
     // Create / update and delete translation request
     @Test
     public void testTR() throws ServiceException {

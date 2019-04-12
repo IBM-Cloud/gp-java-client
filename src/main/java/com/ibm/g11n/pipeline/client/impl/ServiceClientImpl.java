@@ -107,6 +107,7 @@ import com.ibm.g11n.pipeline.client.impl.TranslationConfigDataImpl.RestTranslati
 import com.ibm.g11n.pipeline.client.impl.TranslationRequestDataImpl.RestInputTranslationRequestData;
 import com.ibm.g11n.pipeline.client.impl.TranslationRequestDataImpl.RestTranslationRequest;
 import com.ibm.g11n.pipeline.client.impl.UserDataImpl.RestUser;
+import com.ibm.g11n.pipeline.iam.TokenManagerException;
 
 /**
  * ServiceClient implementation by GSON and JDK's HttpURLConnection.
@@ -1537,7 +1538,7 @@ public class ServiceClientImpl extends ServiceClient {
     }
 
     private ApiResponse invokeApi(String method, String apiPath, String inContentType, byte[] inBody,
-            boolean anonymous) throws IOException {
+            boolean anonymous) throws IOException,TokenManagerException {
         String urlStr = account.getUrl() + "/" + apiPath;
         URL targetUrl = new URL(urlStr);
         HttpURLConnection conn = (HttpURLConnection)targetUrl.openConnection();
@@ -1553,23 +1554,26 @@ public class ServiceClientImpl extends ServiceClient {
         // Authorization header
         if (!anonymous) {
             StringBuilder authHeader = new StringBuilder();
-            String uid = account.getUserId();
-            String secret = account.getPassword();
+            if (account.isIamEnabled()) {
+                authHeader.append("Bearer ");
+                authHeader.append(account.getIamToken());
+            } else {
+                String uid = account.getUserId();
+                String secret = account.getPassword();
 
-            switch (scheme) {
-            case BASIC:
-                authHeader.append("Basic ");
-                authHeader.append(getBasicCredential(uid, secret));
-                break;
+                switch (scheme) {
+                case BASIC:
+                    authHeader.append("Basic ");
+                    authHeader.append(getBasicCredential(uid, secret));
+                    break;
 
-            case HMAC:
-                authHeader.append("GaaS-HMAC ");
-                authHeader.append(
-                        getHmacCredential(uid, secret,
-                                method, urlStr, dateHeader, inBody));
-                break;
+                case HMAC:
+                    authHeader.append("GaaS-HMAC ");
+                    authHeader.append(getHmacCredential(uid, secret, method,
+                            urlStr, dateHeader, inBody));
+                    break;
+                }
             }
-
             conn.setRequestProperty("Authorization", authHeader.toString());
         }
 
@@ -1577,7 +1581,9 @@ public class ServiceClientImpl extends ServiceClient {
         if (inBody != null) {
             conn.setRequestProperty("Content-Type", inContentType);
             conn.setDoOutput(true);
-            conn.getOutputStream().write(inBody);
+            try(OutputStream os=conn.getOutputStream()){
+                os.write(inBody);
+            }
         }
 
         // receiving response
@@ -1593,20 +1599,19 @@ public class ServiceClientImpl extends ServiceClient {
         }
 
         ByteArrayOutputStream baos = new ByteArrayOutputStream(bodyLen);
-        InputStream is = conn.getErrorStream();
-        if (is == null) {
-            is = conn.getInputStream();
+        try (InputStream is = conn.getErrorStream() == null
+                ? conn.getInputStream()
+                : conn.getErrorStream()) {
+            byte[] buf = new byte[2048];
+            int bytes;
+            while ((bytes = is.read(buf)) != -1) {
+                baos.write(buf, 0, bytes);
+            }
+
+            resp.body = baos.toByteArray();
+
+            return resp;
         }
-
-        byte[] buf = new byte[2048];
-        int bytes;
-        while ((bytes = is.read(buf)) != -1) {
-            baos.write(buf, 0, bytes);
-        }
-
-        resp.body = baos.toByteArray();
-
-        return resp;
     }
 
     private static final char SEP = ':';

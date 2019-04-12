@@ -37,6 +37,7 @@ import org.junit.rules.ExpectedException;
 
 import com.ibm.g11n.pipeline.client.NewTranslationConfigData.NewMTServiceData;
 import com.ibm.g11n.pipeline.client.TranslationConfigData.MTServiceData;
+import com.ibm.g11n.pipeline.iam.TokenManagerException;
 
 /**
  * Test cases for config operation APIs in ServiceClient.
@@ -237,7 +238,7 @@ public class ServiceClientConfigTest extends AbstractServiceClientTest {
     //
 
     @Test
-    public void putTranslationConfig_Watson_ShouldBeSaved() throws ServiceException {
+    public void putTranslationConfig_Watson_ShouldBeSaved() throws ServiceException, TokenManagerException {
         assumeTrue(TEST_CONFIG && WATSON_GUID != null);
         Map<String, Object> params = Collections.singletonMap("model", (Object)"news");
         putTestTransConfig(TEST_CONFIG_SRC, TEST_CONFIG_TGT, WATSON_GUID, params);
@@ -248,7 +249,7 @@ public class ServiceClientConfigTest extends AbstractServiceClientTest {
     }
 
     @Test
-    public void putTranslationConfig_Capita_ShouldBeSaved() throws ServiceException {
+    public void putTranslationConfig_Capita_ShouldBeSaved() throws ServiceException, TokenManagerException {
         assumeTrue(TEST_CONFIG && CAPITA_GUID != null);
         Map<String, Object> params = new HashMap<>(2);
         params.put("param1", (Object)"val1");
@@ -273,20 +274,6 @@ public class ServiceClientConfigTest extends AbstractServiceClientTest {
 
         expectedException.expect(ServiceException.class);
         client.getTranslationConfig(sourceLang, targetLang);
-    }
-
-    //
-    // deleteTranslationConfig
-    //
-
-    @Test
-    public void deleteTranslationConfig_NonExisting_ShouldFail() throws ServiceException {
-        // Translation configuration for such combination should not exist
-        final String sourceLang = "zxx";
-        final String targetLang = "qru";
-
-        expectedException.expect(ServiceException.class);
-        client.deleteTranslationConfig(sourceLang, targetLang);
     }
 
     //
@@ -338,7 +325,7 @@ public class ServiceClientConfigTest extends AbstractServiceClientTest {
     }
 
     private static void checkTestTransConfig(TranslationConfigData transConfig,
-            String expInstanceId, Map<String, Object> expParams, boolean checkDateRecent) {
+            String expInstanceId, Map<String, Object> expParams, boolean checkDateRecent) throws TokenManagerException {
         assertEquals("the updated by filed should be the test user",
                 getUpdatedByValue(), transConfig.getUpdatedBy());
         if (checkDateRecent) {
