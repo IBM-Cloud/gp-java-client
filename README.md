@@ -1,6 +1,6 @@
 <!--
 /*  
- * Copyright IBM Corp. 2015
+ * Copyright IBM Corp. 2015-2019
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -113,13 +113,14 @@ The Globalization Service Authentication specific credentials can be specified b
 
 For IAM authentication, you supply either an IAM service **API key** or a **bearer token**. 
 - Use the API key to have the SDK manage the lifecycle of the access token. The SDK requests an access token, ensures that the access token is valid, and fetches a new one when necessary.
-- Use the access token if you want to manage the lifecycle yourself.
+- Use the bearer token if you want to manage the lifecycle yourself.
 
 The IAM specific credentials can be specified by following environment variables::
 
-* __GP_IAM_API_KEY__: IAM endpoint (e.g. https://iam.cloud.ibm.com)
+* __GP_IAM_API_KEY__: IAM API Key
+* __GP_IAM_ENDPOINT__: IAM endpoint (e.g. https://iam.cloud.ibm.com)
+
 * __GP_IAM_BEARER_TOKEN__: IAM Bearer token
-* __GP_IAM_ENDPOINT__: IAM API Key
 
 Please also refer Java Tutorials article
 [Installing a Custom Resource Bundle as an Extension](https://docs.oracle.com/javase/tutorial/i18n/serviceproviders/resourcebundlecontrolprovider.html)
