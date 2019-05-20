@@ -26,6 +26,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.Date;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -283,6 +284,154 @@ public class ServiceClientTRTest extends AbstractServiceClientBundleTest {
         // TODO: Cleanup - cannot delete a TR immediately
         // client.deleteTranslationRequest(trId);
 
+        cleanupBundles();
+    }
+    
+    @Test
+    public void testTRSubmitAsync() throws ServiceException {
+        if (!TEST_TR_SUBMIT) {
+            // Skip this if env var TEST_SUBMIT is not true
+            return;
+        }
+
+        // Creates a new test bundle
+        final String trTestBundleId = testBundleId("TR_TestSubmitAsync1");
+        final String srcLang = "en";
+
+        createBundleWithStrings(trTestBundleId, srcLang, "fr,de", null,
+                new String[][] {{"key1", "Hello"}, {"key2", "Good bye"}});
+
+        // Creates a new translation request
+        final String trTrgLang = "de";
+        Map<String, Set<String>> trgLangsByBundle = new HashMap<>();
+        trgLangsByBundle.put(trTestBundleId, Collections.singleton(trTrgLang));
+        NewTranslationRequestData newTrData = new NewTranslationRequestData(trgLangsByBundle);
+
+        final String trName = "Test TR Submit Async";
+        final String trOrg = "Test Org";
+        final List<String> trEmails = Collections.singletonList("gp-test@ibm.com");
+        final String trPartner = "IBM";
+ 
+        final String metaKeyPhase = "phase";
+        final String metaVal1 = "1";
+        final Map<String, String> trMetadata = new HashMap<>();
+        trMetadata.put(metaKeyPhase, metaVal1);
+
+        newTrData
+            .setPartner(trPartner)
+            .setName(trName)
+            .setOrganization(trOrg)
+            .setEmails(trEmails)
+            .setMetadata(trMetadata)
+            .setSubmit(true);
+
+        // create translation request asynchronously
+        TranslationRequestData trData = client.createTranslationRequest(newTrData, true);
+        String trId = trData.getId();
+        assertNotEquals("Status of TR should not be DRAFT", TranslationRequestStatus.DRAFT, trData.getStatus());
+        // assert that word count data should be empty when TR is submitted asynchronously
+        assertTrue("Word count map should null/empty because TR is submitted asyncrhonously", trData.getWordCountData() == null || trData.getWordCountData().isEmpty());
+
+        
+        // Creates second test bundle
+        final String trTestBundleId2 = testBundleId("TR_TestSubmitAsync2");
+        createBundleWithStrings(trTestBundleId2, srcLang, "fr,de", null,
+                new String[][] {{"key1", "Hello"}, {"key2", "Good bye"}});
+
+        // Creates a new translation request (DRAFT then SUBMITTED)
+        trgLangsByBundle = new HashMap<>();
+        trgLangsByBundle.put(trTestBundleId2, Collections.singleton(trTrgLang));
+        NewTranslationRequestData newTrData2 = new NewTranslationRequestData(trgLangsByBundle);
+
+        final String trName2 = "Test TR Submit Async2";
+
+        newTrData2
+            .setPartner(trPartner)
+            .setName(trName2)
+            .setOrganization(trOrg)
+            .setEmails(trEmails)
+            .setSubmit(false);
+        
+        // create DRAFT translation request
+        TranslationRequestData trData2 = client.createTranslationRequest(newTrData, true);
+        assertTrue("Status should be equal to DRAFT", TranslationRequestStatus.DRAFT == trData2.getStatus());
+        String trId2 = trData2.getId();
+        
+        // Update status to SUBMITTED asynchronously
+        TranslationRequestDataChangeSet trChanges = new TranslationRequestDataChangeSet();
+        trChanges.setSubmit(true);
+        TranslationRequestData updData = client.updateTranslationRequest(trId2, trChanges, true);
+        assertTrue("Status should be equal to SUBMITTED", TranslationRequestStatus.SUBMITTED == updData.getStatus());
+
+        cleanupBundles();
+    }
+    
+    @Test
+    public void testListDraftTRs() throws ServiceException {
+        // Test list performance of Draft TRs with huge word count using summary field
+        
+        // Creates a new test bundle
+        final String trTestBundleId = testBundleId("TR_TestDraft");
+        final String srcLang = "en";
+
+        createBundleWithStrings(trTestBundleId, srcLang, "fr,de", null,
+                new String[][] {
+                {"key1", "This is a test for listing draft TRs."}, 
+                {"key2", "This test checks whether the list of TRs is populated quickly."},
+                {"key2", "When a large number of draft TRs are created, then we do not process wordcount if summary field is true."}
+                });
+
+        // Creates a new translation request
+        final String trTrgLang = "de";
+        Map<String, Set<String>> trgLangsByBundle = new HashMap<>();
+        trgLangsByBundle.put(trTestBundleId, Collections.singleton(trTrgLang));
+        NewTranslationRequestData newTrData = new NewTranslationRequestData(trgLangsByBundle);
+
+        final String trName = "Test TR Submit Async";
+        final String trOrg = "Test Org";
+        final List<String> trEmails = Collections.singletonList("gp-test@ibm.com");
+        final String trPartner = "IBM";
+ 
+        final String metaKeyPhase = "phase";
+        final String metaVal1 = "1";
+        final Map<String, String> trMetadata = new HashMap<>();
+        trMetadata.put(metaKeyPhase, metaVal1);
+
+        newTrData
+            .setPartner(trPartner)
+            .setName(trName)
+            .setOrganization(trOrg)
+            .setEmails(trEmails)
+            .setMetadata(trMetadata)
+            .setSubmit(false);
+        
+        Set<String> draftTRIdSet = new HashSet<>();
+        for (int i = 0; i < 10; i++) {
+            // create draft translation request asynchronously
+            TranslationRequestData trData = client.createTranslationRequest(newTrData, true);
+            draftTRIdSet.add(trData.getId());
+        }
+        
+        // check performance of summary call
+        Date timeStart = new Date();
+        Map<String, TranslationRequestData> summaryDraftTRMap = client.getTranslationRequests(true);
+        long durationWithSummary = new Date().getTime() - timeStart.getTime();
+        Set<String> summaryDraftTRIdSet = summaryDraftTRMap.keySet();
+        assertTrue("All the draft TRs (searched with summary view) should be listed", summaryDraftTRIdSet.containsAll(draftTRIdSet));
+        
+        
+        // check performance of default call without summary field being set to true
+        timeStart = new Date();
+        summaryDraftTRMap = client.getTranslationRequests(false);
+        long durationWithoutSummary = new Date().getTime() - timeStart.getTime();
+        Set<String> withoutSummaryDraftTRIdSet = summaryDraftTRMap.keySet();
+        assertTrue("All the draft TRs should be listed", 
+                withoutSummaryDraftTRIdSet.containsAll(draftTRIdSet));
+        System.out.println("durationWithoutSummary : " + durationWithoutSummary);
+        System.out.println("durationWithSummary : " + durationWithSummary);
+        assertTrue("The TR list performance of draft TRs with summary should be better than list performance of TRs without summary", 
+                durationWithoutSummary > durationWithSummary);
+        
         cleanupBundles();
     }
 }

@@ -781,6 +781,16 @@ public abstract class ServiceClient {
      * @throws ServiceException when the operation failed.
      */
     public abstract Map<String, TranslationRequestData> getTranslationRequests() throws ServiceException;
+    
+    /**
+     * Returns a map containing <code>TranslationRequestData</code> indexed by translation
+     * request IDs.
+     * 
+     * @param summary Some fields are omitted when true, to improve performance.
+     * @return A map containing <code>TranslationRequestData</code> indexed by translation.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract Map<String, TranslationRequestData> getTranslationRequests(boolean summary) throws ServiceException;
 
     /**
      * Returns the translation request specified by the translation request ID.
@@ -790,6 +800,17 @@ public abstract class ServiceClient {
      * @throws ServiceException when the operation failed.
      */
     public abstract TranslationRequestData getTranslationRequest(String trId)
+            throws ServiceException;
+    
+    /**
+     * Returns the translation request specified by the translation request ID.
+     * 
+     * @param trId  The translation request ID.
+     * @param summary Some fields are omitted when true, to improve performance.
+     * @return  The translation request data.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract TranslationRequestData getTranslationRequest(String trId, boolean summary)
             throws ServiceException;
 
     /**
@@ -803,6 +824,18 @@ public abstract class ServiceClient {
             throws ServiceException;
     
     /**
+     * Creates a new translation request.
+     * 
+     * @param newTranslationRequestData The new translation request.
+     * @param async When true, the API result is returned immediately.
+     *        The translation request is processed asynchronously when Submitting.
+     * @return  The translation request created by this operation.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract TranslationRequestData createTranslationRequest(NewTranslationRequestData newTranslationRequestData, boolean async)
+            throws ServiceException;
+    
+    /**
      * Updates the translation request.
      * 
      * @param trId      The translation request ID.
@@ -812,6 +845,18 @@ public abstract class ServiceClient {
      */
     public abstract TranslationRequestData updateTranslationRequest(String trId,
             TranslationRequestDataChangeSet changeSet) throws ServiceException;
+    
+    /**
+     * Updates the translation request.
+     * 
+     * @param trId      The translation request ID.
+     * @param changeSet The change set of translation request data.
+     * @param async The translation request is processed asynchronously when status is updated to SUBMITTED from DRAFT.
+     * @return  The translation request updated by this operation.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract TranslationRequestData updateTranslationRequest(String trId,
+            TranslationRequestDataChangeSet changeSet, boolean async) throws ServiceException;
 
     /**
      * Deletes the translation request.
@@ -914,6 +959,16 @@ public abstract class ServiceClient {
      * @throws ServiceException when the operation failed.
      */
     public abstract Map<String, DocumentTranslationRequestData> getDocumentTranslationRequests() throws ServiceException;
+    
+    /**
+     * Returns a map containing <code>DocumentTranslationRequestData</code> indexed by translation
+     * request ids.
+     * 
+     * @param summary When true, some fields are omitted in the result to improve performance.
+     * @return A map containing <code>DocumentTranslationRequestData</code> indexed by translation.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract Map<String, DocumentTranslationRequestData> getDocumentTranslationRequests(boolean summary) throws ServiceException;
 
     /**
      * Returns the document translation request specified by the translation request ID.
@@ -923,6 +978,17 @@ public abstract class ServiceClient {
      * @throws ServiceException when the operation failed.
      */
     public abstract DocumentTranslationRequestData getDocumentTranslationRequest(String trId)
+            throws ServiceException;
+    
+    /**
+     * Returns the document translation request specified by the translation request ID.
+     * 
+     * @param trId  The translation request id.
+     * @param summary When true, some fields are omitted in the result to improve performance.
+     * @return  The document translation request data.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract DocumentTranslationRequestData getDocumentTranslationRequest(String trId, boolean summary)
             throws ServiceException;
 
     /**
@@ -936,6 +1002,18 @@ public abstract class ServiceClient {
             throws ServiceException;
     
     /**
+     * Creates a new document translation request.
+     * 
+     * @param newTranslationRequestData The new document translation request data.
+     * @param async When true, the API result is returned immediately.
+     *              The translation request is processed asynchronously when submitting.
+     * @return  The translation request created by this operation.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract DocumentTranslationRequestData createDocumentTranslationRequest(NewDocumentTranslationRequestData newTranslationRequestData, boolean async)
+            throws ServiceException;
+    
+    /**
      * Updates the document translation request.
      * 
      * @param trId      The translation request id.
@@ -945,6 +1023,19 @@ public abstract class ServiceClient {
      */
     public abstract DocumentTranslationRequestData updateDocumentTranslationRequest(String trId,
             DocumentTranslationRequestDataChangeSet changeSet) throws ServiceException;
+    
+    /**
+     * Updates the document translation request.
+     * 
+     * @param trId      The translation request id.
+     * @param changeSet The change set of docuemnt translation request data.
+     * @param async When true, the API result is returned immediately.
+     *              The translation request is processed asynchronously when submitting.
+     * @return  The document translation request updated by this operation.
+     * @throws ServiceException when the operation failed.
+     */
+    public abstract DocumentTranslationRequestData updateDocumentTranslationRequest(String trId,
+            DocumentTranslationRequestDataChangeSet changeSet, boolean async) throws ServiceException;
 
     /**
      * Deletes the document translation request.
