@@ -427,10 +427,9 @@ public class ServiceClientTRTest extends AbstractServiceClientBundleTest {
         Set<String> withoutSummaryDraftTRIdSet = summaryDraftTRMap.keySet();
         assertTrue("All the draft TRs should be listed", 
                 withoutSummaryDraftTRIdSet.containsAll(draftTRIdSet));
-        System.out.println("durationWithoutSummary : " + durationWithoutSummary);
-        System.out.println("durationWithSummary : " + durationWithSummary);
-        assertTrue("The TR list performance of draft TRs with summary should be better than list performance of TRs without summary", 
-                durationWithoutSummary > durationWithSummary);
+        assertTrue("The listing of draft TRs with summary took:" + durationWithSummary +
+                " milliseconds, while list performance of draft TRs without summary took: " + durationWithoutSummary + " milliseconds",
+                durationWithoutSummary >= durationWithSummary);
         
         cleanupBundles();
     }

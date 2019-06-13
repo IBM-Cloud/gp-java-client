@@ -45,7 +45,7 @@ public abstract class AbstractServiceClientTest {
 
     static {
         Properties testProps = new Properties();
-        String testPropPath = System.getProperty("TEST_PROPERTIES", "test.properties");
+        String testPropPath = System.getProperty("TEST_PROPERTIES", "src/test/resources/com/ibm/g11n/pipeline/client/test.properties");
         if (testPropPath != null) {
             try (FileInputStream fis = new FileInputStream(testPropPath)) {
                 testProps.load(fis);
