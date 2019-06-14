@@ -428,7 +428,7 @@ public class ServiceClientTRTest extends AbstractServiceClientBundleTest {
         assertTrue("All the draft TRs should be listed", 
                 withoutSummaryDraftTRIdSet.containsAll(draftTRIdSet));
         assertTrue("The listing of draft TRs with summary took:" + durationWithSummary +
-                " milliseconds, while list performance of draft TRs without summary took: " + durationWithoutSummary + " milliseconds",
+                " milliseconds, while listing of draft TRs without summary took: " + durationWithoutSummary + " milliseconds",
                 durationWithoutSummary >= durationWithSummary);
         
         cleanupBundles();
