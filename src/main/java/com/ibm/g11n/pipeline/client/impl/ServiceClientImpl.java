@@ -1124,12 +1124,15 @@ public class ServiceClientImpl extends ServiceClient {
         Map<String, RestTranslationRequest> translationRequests;
     }
 
+    /* (non-Javadoc)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#getTranslationRequests(boolean)
+     */
     @Override
-    public Map<String, TranslationRequestData> getTranslationRequests()
+    public Map<String, TranslationRequestData> getTranslationRequests(boolean summary)
             throws ServiceException {
         GetTranslationRequestsResponse resp = invokeApiJson(
                 "GET",
-                escapePathSegment(account.getInstanceId()) + "/v2/trs",
+                escapePathSegment(account.getInstanceId()) + "/v2/trs" + "?summary="+ summary,
                 null,
                 GetTranslationRequestsResponse.class);
 
@@ -1153,9 +1156,13 @@ public class ServiceClientImpl extends ServiceClient {
         RestTranslationRequest translationRequest;
     }
 
+    /* (non-Javadoc)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#getTranslationRequest(java.lang.String, boolean)
+     */
     @Override
     public TranslationRequestData getTranslationRequest(
-            String trId) throws ServiceException {
+            String trId,
+            boolean summary) throws ServiceException {
         if (trId == null || trId.isEmpty()) {
             throw new IllegalArgumentException("Non-empty trId must be specified.");
         }
@@ -1163,7 +1170,7 @@ public class ServiceClientImpl extends ServiceClient {
         TranslationRequestResponse resp = invokeApiJson(
                 "GET",
                 escapePathSegment(account.getInstanceId()) + "/v2/trs/"
-                    + escapePathSegment(trId),
+                    + escapePathSegment(trId) + "?summary=" + summary,
                 null,
                 TranslationRequestResponse.class);
 
@@ -1174,9 +1181,13 @@ public class ServiceClientImpl extends ServiceClient {
         return new TranslationRequestDataImpl(resp.id, resp.translationRequest);
     }
 
+    /* (non-Javadoc)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#createTranslationRequest(com.ibm.g11n.pipeline.client.NewTranslationRequestData, boolean)
+     */
     @Override
     public TranslationRequestData createTranslationRequest(
-            NewTranslationRequestData newTranslationRequestData)
+            NewTranslationRequestData newTranslationRequestData,
+            boolean async)
             throws ServiceException {
         if (newTranslationRequestData == null) {
             throw new IllegalArgumentException("Non-empty newTranslationRequestData must be specified.");
@@ -1187,7 +1198,7 @@ public class ServiceClientImpl extends ServiceClient {
         String jsonBody = gson.toJson(newRestTRData, RestInputTranslationRequestData.class);
         TranslationRequestResponse resp = invokeApiJson(
                 "POST",
-                escapePathSegment(account.getInstanceId()) + "/v2/trs/new",
+                escapePathSegment(account.getInstanceId()) + "/v2/trs/new" + "?async=" + async,
                 jsonBody,
                 TranslationRequestResponse.class);
 
@@ -1199,10 +1210,14 @@ public class ServiceClientImpl extends ServiceClient {
     }
 
 
+    /* (non-Javadoc)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#updateTranslationRequest(java.lang.String, com.ibm.g11n.pipeline.client.TranslationRequestDataChangeSet, boolean)
+     */
     @Override
     public TranslationRequestData updateTranslationRequest(
             String trId,
-            TranslationRequestDataChangeSet changeSet) throws ServiceException {
+            TranslationRequestDataChangeSet changeSet,
+            boolean async) throws ServiceException {
         if (trId == null || trId.isEmpty()) {
             throw new IllegalArgumentException("Non-empty trId must be specified.");
         }
@@ -1216,7 +1231,7 @@ public class ServiceClientImpl extends ServiceClient {
         TranslationRequestResponse resp = invokeApiJson(
                 "POST",
                 escapePathSegment(account.getInstanceId()) + "/v2/trs/"
-                        + escapePathSegment(trId),
+                        + escapePathSegment(trId) + "?async=" + async,
                 jsonBody,
                 TranslationRequestResponse.class);
 
@@ -1819,16 +1834,13 @@ public class ServiceClientImpl extends ServiceClient {
         Map<String, RestDocumentTranslationRequest> translationRequests;
     }
 
-    /* (non-Javadoc)
-     * @see com.ibm.g11n.pipeline.client.ServiceClient#getDocumentTranslationRequests()
-     */
     @Override
-    public Map<String, DocumentTranslationRequestData> getDocumentTranslationRequests()
+    public Map<String, DocumentTranslationRequestData> getDocumentTranslationRequests(boolean summary)
             throws ServiceException {
 
         GetDocumentTranslationRequestsResponse resp = invokeApiJson(
                 "GET",
-                escapePathSegment(account.getInstanceId()) + "/v2/doc-trs",
+                escapePathSegment(account.getInstanceId()) + "/v2/doc-trs" + "?summary=" + summary,
                 null,
                 GetDocumentTranslationRequestsResponse.class);
 
@@ -1857,7 +1869,7 @@ public class ServiceClientImpl extends ServiceClient {
      */
     @Override
     public DocumentTranslationRequestData getDocumentTranslationRequest(
-            String trId) throws ServiceException {
+            String trId, boolean summary) throws ServiceException {
         if (trId == null || trId.isEmpty()) {
             throw new IllegalArgumentException("Non-empty trId must be specified.");
         }
@@ -1865,7 +1877,7 @@ public class ServiceClientImpl extends ServiceClient {
         DocumentTranslationRequestResponse resp = invokeApiJson(
                 "GET",
                 escapePathSegment(account.getInstanceId()) + "/v2/doc-trs/"
-                    + escapePathSegment(trId),
+                    + escapePathSegment(trId) + "?summary=" + summary,
                 null,
                 DocumentTranslationRequestResponse.class);
 
@@ -1879,11 +1891,12 @@ public class ServiceClientImpl extends ServiceClient {
 
 
     /* (non-Javadoc)
-     * @see com.ibm.g11n.pipeline.client.ServiceClient#createDocumentTranslationRequest(com.ibm.g11n.pipeline.client.NewDocumentTranslationRequestData)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#createDocumentTranslationRequest(com.ibm.g11n.pipeline.client.NewDocumentTranslationRequestData, boolean)
      */
     @Override
     public DocumentTranslationRequestData createDocumentTranslationRequest(
-            NewDocumentTranslationRequestData newTranslationRequestData)
+            NewDocumentTranslationRequestData newTranslationRequestData,
+            boolean async)
             throws ServiceException {
         if (newTranslationRequestData == null) {
             throw new IllegalArgumentException("Non-empty newTranslationRequestData must be specified.");
@@ -1894,7 +1907,7 @@ public class ServiceClientImpl extends ServiceClient {
         String jsonBody = gson.toJson(newRestTRData, RestInputDocumentTranslationRequestData.class);
         DocumentTranslationRequestResponse resp = invokeApiJson(
                 "POST",
-                escapePathSegment(account.getInstanceId()) + "/v2/doc-trs/new",
+                escapePathSegment(account.getInstanceId()) + "/v2/doc-trs/new" + "?async=" + async,
                 jsonBody,
                 DocumentTranslationRequestResponse.class);
 
@@ -1908,11 +1921,13 @@ public class ServiceClientImpl extends ServiceClient {
 
 
     /* (non-Javadoc)
-     * @see com.ibm.g11n.pipeline.client.ServiceClient#updateDocumentTranslationRequest(java.lang.String, com.ibm.g11n.pipeline.client.DocumentTranslationRequestDataChangeSet)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#updateDocumentTranslationRequest(java.lang.String, com.ibm.g11n.pipeline.client.DocumentTranslationRequestDataChangeSet, boolean)
      */
     @Override
     public DocumentTranslationRequestData updateDocumentTranslationRequest(
-            String trId, DocumentTranslationRequestDataChangeSet changeSet)
+            String trId, 
+            DocumentTranslationRequestDataChangeSet changeSet,
+            boolean async)
             throws ServiceException {
         if (trId == null || trId.isEmpty()) {
             throw new IllegalArgumentException("Non-empty trId must be specified.");
@@ -1927,7 +1942,7 @@ public class ServiceClientImpl extends ServiceClient {
         DocumentTranslationRequestResponse resp = invokeApiJson(
                 "POST",
                 escapePathSegment(account.getInstanceId()) + "/v2/doc-trs/"
-                        + escapePathSegment(trId),
+                        + escapePathSegment(trId) + "?async=" + async,
                 jsonBody,
                 DocumentTranslationRequestResponse.class);
 
@@ -2210,5 +2225,76 @@ public class ServiceClientImpl extends ServiceClient {
         }
         assert resp.body != null;
         outputXliff.write(resp.body);
+    }
+
+    /* (non-Javadoc)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#getTranslationRequests()
+     */
+    @Override
+    public Map<String, TranslationRequestData> getTranslationRequests() throws ServiceException {
+        return getTranslationRequests(false);
+    }
+
+    /* (non-Javadoc)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#getTranslationRequest(java.lang.String)
+     */
+    @Override
+    public TranslationRequestData getTranslationRequest(String trId) throws ServiceException {
+        return getTranslationRequest(trId, false);
+    }
+
+    /* (non-Javadoc)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#createTranslationRequest(com.ibm.g11n.pipeline.client.NewTranslationRequestData)
+     */
+    @Override
+    public TranslationRequestData createTranslationRequest(NewTranslationRequestData newTranslationRequestData)
+            throws ServiceException {
+        return createTranslationRequest(newTranslationRequestData, false);
+    }
+
+    /* (non-Javadoc)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#updateTranslationRequest(java.lang.String, com.ibm.g11n.pipeline.client.TranslationRequestDataChangeSet)
+     */
+    @Override
+    public TranslationRequestData updateTranslationRequest(String trId,
+            TranslationRequestDataChangeSet changeSet)
+            throws ServiceException {
+        return updateTranslationRequest(trId, changeSet, false);
+    }
+
+    /* (non-Javadoc)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#getDocumentTranslationRequests()
+     */
+    @Override
+    public Map<String, DocumentTranslationRequestData> getDocumentTranslationRequests() throws ServiceException {
+        return getDocumentTranslationRequests(false);
+    }
+
+    /* (non-Javadoc)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#getDocumentTranslationRequest(java.lang.String)
+     */
+    @Override
+    public DocumentTranslationRequestData getDocumentTranslationRequest(String trId) throws ServiceException {
+        return getDocumentTranslationRequest(trId, false);
+    }
+
+    /* (non-Javadoc)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#createDocumentTranslationRequest(com.ibm.g11n.pipeline.client.NewDocumentTranslationRequestData)
+     */
+    @Override
+    public DocumentTranslationRequestData createDocumentTranslationRequest(
+            NewDocumentTranslationRequestData newTranslationRequestData) throws ServiceException {
+        return createDocumentTranslationRequest(newTranslationRequestData, false);
+    }
+
+
+    /* (non-Javadoc)
+     * @see com.ibm.g11n.pipeline.client.ServiceClient#updateDocumentTranslationRequest(java.lang.String, com.ibm.g11n.pipeline.client.DocumentTranslationRequestDataChangeSet)
+     */
+    @Override
+    public DocumentTranslationRequestData updateDocumentTranslationRequest(
+            String trId,
+            DocumentTranslationRequestDataChangeSet changeSet) throws ServiceException {
+        return updateDocumentTranslationRequest(trId, changeSet, false);
     }
 }
